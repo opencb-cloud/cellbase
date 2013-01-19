@@ -1,14 +1,15 @@
 package org.bioinfo.cellbase.parser;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.bioinfo.cellbase.common.variation.ConsequenceType;
 import org.bioinfo.cellbase.common.variation.Variation;
@@ -26,20 +27,20 @@ public class VariationParser {
 
 	public void parseGvfToJson(File variationFile, File outJsonFile) {
 		try {
+			int contadorGlobal = 0;
+			int contadorProcess = 0;
 			String line;
 			List<Variation> container = new ArrayList<Variation>();
 			Variation variation = null;
 			// Java 7 IO code
-			// BufferedWriter bw =
-			// Files.newBufferedWriter(Paths.get(outJsonFile.toURI()),
-			// Charset.defaultCharset(), StandardOpenOption.CREATE);
+			BufferedWriter bw = Files.newBufferedWriter(
+					Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),
+					StandardOpenOption.CREATE);
 			BufferedReader br = Files.newBufferedReader(
 					Paths.get(variationFile.toURI()), Charset.defaultCharset());
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("##")) {
 					variation = new Variation();
-//					System.out.println("Creando nueva instancia de Variation");
-					// System.out.println(line);
 					String[] data = line.split("\t");
 					String[] attributesData = data[8].split(";");
 
@@ -48,45 +49,31 @@ public class VariationParser {
 					variation.setEnd(Integer.parseInt(data[4]));
 					variation.setStrand(data[6]);
 
-					// Pattern pattern = Pattern.compile(";");
 					String[] variantSeq = null;
 					for (int i = 0; i < attributesData.length; i++) {
 						String[] aux = attributesData[i].split("=");
 
-						// System.out.print(aux[0].toLowerCase());
 						switch (aux[0].toLowerCase()) {
 						case "id":
-							// System.out.println("\t Estamos en id con ---->" +
-							// aux[1]);
 							variation.setFeatureId(aux[1]);
 							break;
 						case "variant_seq":
-							// System.out.println("\t Estamos en variant_seq con ---->"
-							// + aux[1]);
 							variantSeq = aux[1].split(",");
 							variation.setAlternate(aux[1]);
 							break;
 						case "variant_effect":
 							String[] variantEffect = aux[1].split(" ");
-							// System.out.println("\t variant_effect con ---->"
-							// + aux[1]);
-							// System.out.println("Integerrrrrr --->" +
-							// Integer.parseInt(variantEffect[1]));
-							// if(variantSeq != null) {
-							// System.out.println("no es null");
-							// } else{
-							// System.out.println("es null");
-							// }
 
-							switch (variantSeq[Integer.parseInt(variantEffect[1])]) {
+							switch (variantSeq[Integer
+									.parseInt(variantEffect[1])]) {
 							case "-":
 								variation
 										.setConsequenceTypes(new ConsequenceType(
 												variantEffect[0],
 												variantEffect[3], "-",
 												variantEffect[2]));
-//								System.out.println("AQUI");
 								break;
+
 							default:
 								variation
 										.setConsequenceTypes(new ConsequenceType(
@@ -100,16 +87,12 @@ public class VariationParser {
 
 							break;
 						case "reference_seq":
-							// System.out.println("\t reference_seq con ---->" +
-							// aux[1]);
 							variation.setReference(aux[1]);
 							break;
 						case "dbxref":
 							String[] dbxref = aux[1].split(",", -1);
 
 							String[] fields;
-							// System.out.println("\t Estamos en dbxref con ---->"
-							// + aux[1]);
 							for (int j = 0; j < dbxref.length; j++) {
 								fields = dbxref[j].split(":");
 								variation.setXrefs(new Xref(fields[0],
@@ -118,8 +101,6 @@ public class VariationParser {
 
 							break;
 						case "validation_states":
-							// System.out.println("\t Estamos en validation_states con ---->"
-							// + aux[1]);
 							variation.setValidationStates(aux[1]);
 							break;
 						default:
@@ -128,14 +109,11 @@ public class VariationParser {
 					}
 				}
 				container.add(variation);
-				System.out.println(gson.toJson(variation));
+				bw.write(gson.toJson(variation) + "\n");
 			}
 
-			// Last chromosome must be processed
-			// writeGenomeChunks(chromosome, sequenceStringBuilder.toString(),
-			// bw);
 			br.close();
-			// bw.close();
+			bw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
