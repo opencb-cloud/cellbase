@@ -6,9 +6,10 @@ import java.util.List;
 public class Variation {
 
 	@SuppressWarnings("unused")
-//	private String _id;
+	// private String _id;
 	private String name;
 	private String chromosome;
+	private String type;
 	private int start;
 	private int end;
 	private String strand;
@@ -24,13 +25,14 @@ public class Variation {
 
 	// Optional
 	private String featureAlias;
-//	private String variantSeSeq;
-//	private String variantReads;
+	// private String variantSeSeq;
+	// private String variantReads;
 	private String total_reads;
 	private String zygosity;
 	private String variantFreq;
 	private String validationStates;
-//	private List<String> variantEffect
+
+	// private List<String> variantEffect
 
 	public String getName() {
 		return name;
@@ -140,6 +142,14 @@ public class Variation {
 		return reference;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
@@ -159,7 +169,5 @@ public class Variation {
 	public void setXrefs(Xref xrefs) {
 		this.xrefs.add(xrefs);
 	}
-
-
 
 }

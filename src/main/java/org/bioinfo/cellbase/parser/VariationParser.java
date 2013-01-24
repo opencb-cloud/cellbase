@@ -45,6 +45,7 @@ public class VariationParser {
 					String[] attributesData = data[8].split(";");
 
 					variation.setChromosome(data[0]);
+					variation.setType(data[2]);
 					variation.setStart(Integer.parseInt(data[3]));
 					variation.setEnd(Integer.parseInt(data[4]));
 					variation.setStrand(data[6]);
@@ -63,9 +64,8 @@ public class VariationParser {
 							break;
 						case "variant_effect":
 							String[] variantEffect = aux[1].split(" ");
-
-							switch (variantSeq[Integer
-									.parseInt(variantEffect[1])]) {
+							System.out.println("asdfasfasfads--->" + Integer.parseInt(variantEffect[1]));
+							switch (variantSeq[Integer.parseInt(variantEffect[1])]) {
 							case "-":
 								variation
 										.setConsequenceTypes(new ConsequenceType(
