@@ -11,7 +11,7 @@ public class VariationParserTest {
 
 		VariationParser vp = new VariationParser();
 		
-		vp.parseGvfToJson(new File("/home/echirivella/appl/cellbase/installation-dir/example/Homo_sapiens_incl_consequences_1000.gvf"), new File("/home/echirivella/appl/cellbase/installation-dir/example/Homo_sapiens_incl_consequences_1000.Json"));
+		vp.parseGvfToJson(new File("/home/echirivella/appl/cellbase/installation-dir/example/Homo_sapiens.gvf"), new File("/home/echirivella/appl/cellbase/installation-dir/example/Homo_sapiens.Json"));
 	}
 
 }
