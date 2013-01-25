@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Variation {
 
-	@SuppressWarnings("unused")
 	// private String _id;
 	private String name;
 	private String chromosome;
@@ -15,6 +14,13 @@ public class Variation {
 	private String strand;
 	private String reference;
 	private String alternate;
+
+	private String species;
+	private String assembly;
+	private String source;
+	private String version;
+
+	private List<SampleGenotype> samples = new ArrayList<SampleGenotype>();
 
 	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>();
 	private List<PopulationFrequency> populationFrequencies;
@@ -27,12 +33,88 @@ public class Variation {
 	private String featureAlias;
 	// private String variantSeSeq;
 	// private String variantReads;
-	private String total_reads;
-	private String zygosity;
 	private String variantFreq;
 	private String validationStates;
 
 	// private List<String> variantEffect
+
+	public Variation() {
+	}
+
+	public Variation(String name, String chromosome, String type, int start, int end, String strand, String reference,
+			String alternate, String species, String assembly, String source, String version,
+			List<SampleGenotype> samples, List<ConsequenceType> consequenceTypes,
+			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String featureAlias,
+			String variantFreq, String validationStates) {
+		this.name = name;
+		this.chromosome = chromosome;
+		this.type = type;
+		this.start = start;
+		this.end = end;
+		this.strand = strand;
+		this.reference = reference;
+		this.alternate = alternate;
+		this.species = species;
+		this.assembly = assembly;
+		this.source = source;
+		this.version = version;
+		this.samples = samples;
+		this.consequenceTypes = consequenceTypes;
+		this.populationFrequencies = populationFrequencies;
+		this.xrefs = xrefs;
+		this.featureId = featureId;
+		this.featureAlias = featureAlias;
+		this.variantFreq = variantFreq;
+		this.validationStates = validationStates;
+	}
+
+	public String getSpecies() {
+		return species;
+	}
+
+	public void setSpecies(String species) {
+		this.species = species;
+	}
+
+	public String getAssembly() {
+		return assembly;
+	}
+
+	public void setAssembly(String assembly) {
+		this.assembly = assembly;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public List<SampleGenotype> getSamples() {
+		return samples;
+	}
+
+	public void setSamples(List<SampleGenotype> samples) {
+		this.samples = samples;
+	}
+
+	public void setConsequenceTypes(List<ConsequenceType> consequenceTypes) {
+		this.consequenceTypes = consequenceTypes;
+	}
+
+	public void setXrefs(List<Xref> xrefs) {
+		this.xrefs = xrefs;
+	}
 
 	public String getName() {
 		return name;
@@ -104,22 +186,6 @@ public class Variation {
 
 	public void setFeatureAlias(String featureAlias) {
 		this.featureAlias = featureAlias;
-	}
-
-	public String getTotal_reads() {
-		return total_reads;
-	}
-
-	public void setTotal_reads(String total_reads) {
-		this.total_reads = total_reads;
-	}
-
-	public String getZygosity() {
-		return zygosity;
-	}
-
-	public void setZygosity(String zygosity) {
-		this.zygosity = zygosity;
 	}
 
 	public String getVariantFreq() {

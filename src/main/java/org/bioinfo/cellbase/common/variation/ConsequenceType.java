@@ -2,24 +2,25 @@ package org.bioinfo.cellbase.common.variation;
 
 public class ConsequenceType {
 
-	private String consequenceType;
+	private String soAccession;
+	private String soName;
 	private String trancriptId;
 	private String allele;
 	private String featureType;
 	
 	public ConsequenceType(String consequenceType, String trancriptId, String allele, String featureType) {
-		this.consequenceType = consequenceType;
+		this.soName = consequenceType;
 		this.trancriptId = trancriptId;
 		this.allele = allele;
 		this.featureType = featureType;
 	}
 
 	public String getConsequenceType() {
-		return consequenceType;
+		return soName;
 	}
 
 	public void setConsequenceType(String consequenceType) {
-		this.consequenceType = consequenceType;
+		this.soName = consequenceType;
 	}
 
 	public String getTrancriptId() {

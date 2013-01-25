@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bioinfo.cellbase.common.variation.ConsequenceType;
@@ -27,89 +28,103 @@ public class VariationParser {
 
 	public void parseGvfToJson(File variationFile, File outJsonFile) {
 		try {
-			int contadorGlobal = 0;
-			int contadorProcess = 0;
+			double timestart = System.currentTimeMillis();
+			int contador = 0;
 			String line;
 			List<Variation> container = new ArrayList<Variation>();
-			Variation variation = null;
+			Variation[] variation = null;
 			// Java 7 IO code
-			BufferedWriter bw = Files.newBufferedWriter(
-					Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),
+			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),
 					StandardOpenOption.CREATE);
-			BufferedReader br = Files.newBufferedReader(
-					Paths.get(variationFile.toURI()), Charset.defaultCharset());
+			BufferedReader br = Files.newBufferedReader(Paths.get(variationFile.toURI()), Charset.defaultCharset());
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("##")) {
-					variation = new Variation();
 					String[] data = line.split("\t");
 					String[] attributesData = data[8].split(";");
-
-					variation.setChromosome(data[0]);
-					variation.setType(data[2]);
-					variation.setStart(Integer.parseInt(data[3]));
-					variation.setEnd(Integer.parseInt(data[4]));
-					variation.setStrand(data[6]);
-
+					int numberVariantSeq = attributesData[1].split("=")[1].split(",").length;
 					String[] variantSeq = null;
-					for (int i = 0; i < attributesData.length; i++) {
-						String[] aux = attributesData[i].split("=");
-
-						switch (aux[0].toLowerCase()) {
-						case "id":
-							variation.setFeatureId(aux[1]);
-							break;
-						case "variant_seq":
-							variantSeq = aux[1].split(",");
-							variation.setAlternate(aux[1]);
-							break;
-						case "variant_effect":
-							String[] variantEffect = aux[1].split(" ");
-							System.out.println("asdfasfasfads--->" + Integer.parseInt(variantEffect[1]));
-							switch (variantSeq[Integer.parseInt(variantEffect[1])]) {
-							case "-":
-								variation
-										.setConsequenceTypes(new ConsequenceType(
-												variantEffect[0],
-												variantEffect[3], "-",
-												variantEffect[2]));
-								break;
-
-							default:
-								variation
-										.setConsequenceTypes(new ConsequenceType(
-												variantEffect[0],
-												variantEffect[3],
-												variantSeq[Integer
-														.parseInt(variantEffect[1])],
-												variantEffect[2]));
-								break;
-							}
-
-							break;
-						case "reference_seq":
-							variation.setReference(aux[1]);
-							break;
-						case "dbxref":
-							String[] dbxref = aux[1].split(",", -1);
-
-							String[] fields;
-							for (int j = 0; j < dbxref.length; j++) {
-								fields = dbxref[j].split(":");
-								variation.setXrefs(new Xref(fields[0],
-										fields[1]));
-							}
-
-							break;
-						case "validation_states":
-							variation.setValidationStates(aux[1]);
-							break;
-						default:
-							break;
+					for (String string : attributesData) {
+						if(string.contains("Variant_seq")){
+							variantSeq = string.split("=")[1].split(",");
+							break;//Testear este break;
 						}
+						 
+					}
+					variation = new Variation[numberVariantSeq];
+
+
+					for (int i = 0; i < variation.length; i++) {
+						variation[i] = new Variation();
+						variation[i].setChromosome(data[0]);
+						variation[i].setType(data[2]);
+						variation[i].setStart(Integer.parseInt(data[3]));
+						variation[i].setEnd(Integer.parseInt(data[4]));
+						variation[i].setStrand(data[6]);
+						for (int j = 0; j < attributesData.length; j++) {
+							String[] aux = attributesData[j].split("=");
+							switch (aux[0].toLowerCase()) {
+							case "id":
+								variation[i].setFeatureId(aux[1]);
+								break;
+							case "variant_seq":
+								variation[i].setAlternate(aux[1].split(",")[i]);
+								break;
+							case "variant_effect":
+//								System.out.println(aux[1]);
+								String[] variantEffect = aux[1].split(" ");
+//								System.out.println("sadadasdadas ->>>" +Integer.parseInt(variantEffect[1]));
+//								System.out.println("la i vale... >>>>>>" +  i);
+								if (Integer.parseInt(variantEffect[1]) == i) {
+									switch (variantSeq[Integer.parseInt(variantEffect[1])]) {
+									case "-":
+										variation[i].setConsequenceTypes(new ConsequenceType(variantEffect[0],
+												variantEffect[3], "-", variantEffect[2]));
+										break;
+
+									default:
+
+										variation[i].setConsequenceTypes(new ConsequenceType(variantEffect[0],
+												variantEffect[3], variantSeq[Integer.parseInt(variantEffect[1])],
+												variantEffect[2]));
+										break;
+									}
+								}
+
+								break;
+							case "reference_seq":
+								variation[i].setReference(aux[1]);
+								break;
+							case "dbxref":
+								if (numberVariantSeq == 1) {
+									String[] dbxref = aux[1].split(",", -1);
+
+									String[] fields;
+									for (int z = 0; z < dbxref.length; z++) {
+										fields = dbxref[z].split(":");
+										variation[i].setXrefs(new Xref(fields[0], fields[1]));
+									}
+								}
+
+								break;
+							case "validation_states":
+								variation[i].setValidationStates(aux[1]);
+								break;
+							default:
+								break;
+							}
+						}
+						
+					}
+					for (Variation var : variation) {
+						container.add(var);
+						bw.write(gson.toJson(var) + "\n");
 					}
 				}
-				container.add(variation);
-				bw.write(gson.toJson(variation) + "\n");
+				contador++;
+				if (contador % 100000 == 0){
+					System.out.println((System.currentTimeMillis() - timestart)*10E-6 + " Segundos");
+					System.out.println(contador);
+				}
 			}
 
 			br.close();

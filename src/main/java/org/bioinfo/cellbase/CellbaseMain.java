@@ -28,6 +28,7 @@ public class CellbaseMain {
 		options = new Options();
 		options.addOption(OptionFactory.createOption("file", "outdir ...", true, true));
 		options.addOption(OptionFactory.createOption("o", "outdir ...", true, true));	
+		
 		try {
 			parse(args, false);
 			
