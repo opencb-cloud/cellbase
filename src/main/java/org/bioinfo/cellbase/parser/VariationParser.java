@@ -31,18 +31,24 @@ public class VariationParser {
 			double timestart = System.currentTimeMillis();
 			int contador = 0;
 			String line;
-			List<Variation> container = new ArrayList<Variation>();
+			//List<Variation> container = new ArrayList<Variation>();
 			Variation[] variation = null;
+
+			String[] data = new String[9];
+			String[] attributesData = null;
+			int numberVariantSeq = 0;
+			String[] variantSeq = null;
+			
 			// Java 7 IO code
 			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),
 					StandardOpenOption.CREATE);
 			BufferedReader br = Files.newBufferedReader(Paths.get(variationFile.toURI()), Charset.defaultCharset());
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("##")) {
-					String[] data = line.split("\t");
-					String[] attributesData = data[8].split(";");
-					int numberVariantSeq = attributesData[1].split("=")[1].split(",").length;
-					String[] variantSeq = null;
+					data = line.split("\t");
+					attributesData = data[8].split(";");
+					numberVariantSeq = attributesData[1].split("=")[1].split(",").length;
+					variation = new Variation[numberVariantSeq];
 					for (String string : attributesData) {
 						if(string.contains("Variant_seq")){
 							variantSeq = string.split("=")[1].split(",");
@@ -50,10 +56,8 @@ public class VariationParser {
 						}
 						 
 					}
-					variation = new Variation[numberVariantSeq];
-
-
-					for (int i = 0; i < variation.length; i++) {
+//					System.out.println(attributesData[1].split("=")[1].split(",").length);
+					for (int i = 0; i < numberVariantSeq; i++) {
 						variation[i] = new Variation();
 						variation[i].setChromosome(data[0]);
 						variation[i].setType(data[2]);
@@ -116,13 +120,13 @@ public class VariationParser {
 						
 					}
 					for (Variation var : variation) {
-						container.add(var);
+						//container.add(var);
 						bw.write(gson.toJson(var) + "\n");
 					}
 				}
 				contador++;
 				if (contador % 100000 == 0){
-					System.out.println((System.currentTimeMillis() - timestart)*10E-6 + " Segundos");
+					System.out.println((System.currentTimeMillis() - timestart)/1000 + " Segundos");
 					System.out.println(contador);
 				}
 			}

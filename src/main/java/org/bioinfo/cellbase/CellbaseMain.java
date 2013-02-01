@@ -1,5 +1,6 @@
 package org.bioinfo.cellbase;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
@@ -7,6 +8,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.bioinfo.cellbase.parser.VariationParser;
 
 public class CellbaseMain {
 
@@ -26,28 +28,11 @@ public class CellbaseMain {
 		// TODO Auto-generated method stub
 		parser = new PosixParser();
 		options = new Options();
-		options.addOption(OptionFactory.createOption("file", "outdir ...", true, true));
-		options.addOption(OptionFactory.createOption("o", "outdir ...", true, true));	
-		
-		try {
-			parse(args, false);
-			
-			if(commandLine.hasOption("file")) {
-				System.out.println("tomaaaaaa!!!!!!!!!!");
-			}
-			
-			
-			
-			
-			
-			
-			
-			
-		} catch (ParseException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		VariationParser vp = new VariationParser();
+
+		vp.parseGvfToJson(new File(
+				"/home/echirivella/Downloads/Homo_sapiens.gvf"), new File(
+				"/home/echirivella/Downloads/Homo_sapiens.Json"));
 	}
 
 	private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
