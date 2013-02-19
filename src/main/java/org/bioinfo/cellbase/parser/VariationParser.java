@@ -3,14 +3,16 @@ package org.bioinfo.cellbase.parser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import org.bioinfo.cellbase.common.variation.ConsequenceType;
 import org.bioinfo.cellbase.common.variation.Variation;
@@ -28,9 +30,29 @@ public class VariationParser {
 
 	public void parseGvfToJson(File variationFile, File outJsonFile) {
 		try {
+			String line;
+
+			String[] fields1;
+			Set<String> chromosomes = new LinkedHashSet<>();
+//			BufferedReader br1 = Files.newBufferedReader(Paths.get(variationFile.toURI()), Charset.defaultCharset());
+			BufferedReader br1 = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(variationFile ) ) ) );
+			while ((line = br1.readLine()) != null) {
+				if (!line.startsWith("##")) {
+					fields1 = line.split("\t");
+					if(!chromosomes.contains(fields1[0])) {
+						chromosomes.add(fields1[0]);
+						System.out.println(fields1[0]);
+					}
+				}
+			}
+			br1.close();
+			System.out.println(chromosomes);
+			System.exit(0);
+
+
 			double timestart = System.currentTimeMillis();
 			int contador = 0;
-			String line;
+
 			//List<Variation> container = new ArrayList<Variation>();
 			Variation[] variation = null;
 
@@ -38,7 +60,7 @@ public class VariationParser {
 			String[] attributesData = null;
 			int numberVariantSeq = 0;
 			String[] variantSeq = null;
-			
+
 			// Java 7 IO code
 			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),
 					StandardOpenOption.CREATE);
@@ -54,9 +76,9 @@ public class VariationParser {
 							variantSeq = string.split("=")[1].split(",");
 							break;//Testear este break;
 						}
-						 
+
 					}
-//					System.out.println(attributesData[1].split("=")[1].split(",").length);
+					//					System.out.println(attributesData[1].split("=")[1].split(",").length);
 					for (int i = 0; i < numberVariantSeq; i++) {
 						variation[i] = new Variation();
 						variation[i].setChromosome(data[0]);
@@ -74,10 +96,10 @@ public class VariationParser {
 								variation[i].setAlternate(aux[1].split(",")[i]);
 								break;
 							case "variant_effect":
-//								System.out.println(aux[1]);
+								//								System.out.println(aux[1]);
 								String[] variantEffect = aux[1].split(" ");
-//								System.out.println("sadadasdadas ->>>" +Integer.parseInt(variantEffect[1]));
-//								System.out.println("la i vale... >>>>>>" +  i);
+								//								System.out.println("sadadasdadas ->>>" +Integer.parseInt(variantEffect[1]));
+								//								System.out.println("la i vale... >>>>>>" +  i);
 								if (Integer.parseInt(variantEffect[1]) == i) {
 									switch (variantSeq[Integer.parseInt(variantEffect[1])]) {
 									case "-":
@@ -117,7 +139,7 @@ public class VariationParser {
 								break;
 							}
 						}
-						
+
 					}
 					for (Variation var : variation) {
 						//container.add(var);

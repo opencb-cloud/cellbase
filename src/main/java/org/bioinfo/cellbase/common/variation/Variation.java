@@ -8,10 +8,10 @@ public class Variation {
 	// private String _id;
 	private String name;
 	private String chromosome;
-	private String type;
 	private int start;
 	private int end;
 	private String strand;
+	private String type;
 	private String reference;
 	private String alternate;
 
@@ -24,8 +24,8 @@ public class Variation {
 
 	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>();
 	private List<PopulationFrequency> populationFrequencies;
-	private List<Xref> xrefs = new ArrayList<Xref>();
 
+	private List<Xref> xrefs = new ArrayList<Xref>();
 	// Required
 	private String featureId;
 

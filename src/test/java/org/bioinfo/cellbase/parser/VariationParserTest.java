@@ -11,7 +11,8 @@ public class VariationParserTest {
 
 		VariationParser vp = new VariationParser();
 		
-		vp.parseGvfToJson(new File("/home/echirivella/Downloads/Homo_sapiens.gvf"), new File("/home/echirivella/Downloads/Homo_sapiens.Json"));
+//		vp.parseGvfToJson(new File("/home/echirivella/Downloads/Homo_sapiens.gvf"), new File("/home/echirivella/Downloads/Homo_sapiens.Json"));
+		vp.parseGvfToJson(new File("/home/imedina/cellbase_v3/hsapiens/Homo_sapiens_incl_consequences.gvf.gz"), new File("/home/echirivella/Downloads/Homo_sapiens.Json"));
 	}
 
 }

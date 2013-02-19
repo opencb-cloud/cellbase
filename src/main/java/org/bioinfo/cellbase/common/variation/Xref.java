@@ -2,30 +2,46 @@ package org.bioinfo.cellbase.common.variation;
 
 public class Xref {
 
-	private String dataBase;
-	private String crossReference;
+	private String id;
+	private String source;
+	private String version;
 
-	public Xref(String dataBase, String crossReference) {
-		this.dataBase = dataBase;
-		this.crossReference = crossReference;
+	public Xref(String id, String source) {
+		this(id, source, "");
 	}
+	
+	public Xref(String id, String source, String version) {
+		this.id = id;
+		this.source = source;
+		this.version = version;
+	}
+	
 
 	public String getDataBase() {
-		return dataBase;
+		return source;
 	}
 
 	public void setDataBase(String dataBase) {
-		this.dataBase = dataBase;
+		this.source = dataBase;
 	}
+	
 
 	public String getCrossReference() {
-		return crossReference;
+		return id;
 	}
 
 	public void setCrossReference(String crossReference) {
-		this.crossReference = crossReference;
+		this.id = crossReference;
 	}
 	
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
 	
 
 }

@@ -15,6 +15,16 @@ public class ConsequenceType {
 		this.featureType = featureType;
 	}
 
+
+	public String getSoAccession() {
+		return soAccession;
+	}
+
+	public void setSoAccession(String soAccession) {
+		this.soAccession = soAccession;
+	}
+	
+	
 	public String getConsequenceType() {
 		return soName;
 	}
@@ -23,6 +33,7 @@ public class ConsequenceType {
 		this.soName = consequenceType;
 	}
 
+	
 	public String getTrancriptId() {
 		return trancriptId;
 	}
@@ -30,6 +41,7 @@ public class ConsequenceType {
 	public void setTrancriptId(String trancriptId) {
 		this.trancriptId = trancriptId;
 	}
+	
 
 	public String getAllele() {
 		return allele;
@@ -38,6 +50,7 @@ public class ConsequenceType {
 	public void setAllele(String allele) {
 		this.allele = allele;
 	}
+	
 
 	public String getFeatureType() {
 		return featureType;
@@ -45,8 +58,6 @@ public class ConsequenceType {
 
 	public void setFeatureType(String featureType) {
 		this.featureType = featureType;
-	}
-	
-	
+	}	
 	
 }
