@@ -223,17 +223,7 @@ print @snps."\n";
 			}
 			print SNP $snp_cont."\t".$variation_feature->variation_name()."\t".$chrom->seq_region_name."\t".$variation_feature->seq_region_start."\t".$variation_feature->seq_region_end."\t".$variation_feature->strand."\t".$variation_feature->map_weight."\t".$variation_feature->allele_string."\t".$variation->ancestral_allele."\t".$source_version."\t".$variation_feature->display_consequence('SO')."\t".join(",",@{$variation_feature->consequence_type('SO')})."\t".$variation_feature->display_consequence()."\t".$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
-			#principio chapuzas
-			
-			#print "fasdfasdfasdfasdf";
-			
-			local $JSON::ConvBlessed = 1;
-			#my $json = JSON::XS->new();			
-			
-			print to_json($variation_feature);
-
-			#fin chapuzas
-			
+		
 			##### SNP phenotype annotation	####################################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
 			if(@var_annots > 0) {
