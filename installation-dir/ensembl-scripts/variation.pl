@@ -128,6 +128,14 @@ my ($reference_codon, $codon, $allele_pep_allele_string, $polyphen_pred, $polyph
 my ($variation, @trans_snps, @var_annots, @all_syns, @syn_sources, @pop_genotypes, %snp_freqs, @trans_var_alleles);
 my ($snp_slice_left, $snp_slice_right, $trans_stable_id, $trans);
 
+##################### DECLARE VARIATION HASH ####################
+
+my %hVariationFeature = ();
+
+my %hVariation = ();
+
+######## END DECLARE VARIATION HASH #############################
+
 
 ## constants
 my $slice_start = 1;
@@ -144,6 +152,7 @@ open (SNP_POP_FREQ,">$outdir/snp_population_frequency.txt") || die "Cannot open 
 open (SNP_PHEN_ANNOT,">$outdir/snp_phenotype_annotation.txt") || die "Cannot open $outdir file";
 open (SNP_XREF,">$outdir/snp_xref.txt") || die "Cannot open $outdir file";
 open (STRUCT_VAR,">$outdir/structural_variation.txt") || die "Cannot open $outdir file";
+open (SNP_TEST,">$outdir/snp_test.txt") || die "Cannot open $outdir file";
 
 
 ## calculate CONSEQUENCE_TYPE
@@ -156,6 +165,9 @@ foreach my $key(keys(%OVERLAP_CONSEQUENCES)) {
 	print CONSEQ_TYPE $consq_type_id."\t".$OVERLAP_CONSEQUENCES{$key}->SO_accession."\t".$OVERLAP_CONSEQUENCES{$key}->SO_term."\t".$OVERLAP_CONSEQUENCES{$key}->feature_SO_term."\t";
 	print CONSEQ_TYPE $OVERLAP_CONSEQUENCES{$key}->display_term."\t".$OVERLAP_CONSEQUENCES{$key}->rank."\t";
 	print CONSEQ_TYPE $OVERLAP_CONSEQUENCES{$key}->NCBI_term."\t".$OVERLAP_CONSEQUENCES{$key}->label."\t".$OVERLAP_CONSEQUENCES{$key}->description."\n";
+	
+	
+	
 }
 close(CONSEQ_TYPE);
 print Dumper \%consequence_type_ids if $verbose;
@@ -194,9 +206,40 @@ foreach my $chrom_obj(@chroms) {
 			if(@structural_variants > 0){
 				foreach my $struc_variation_feature(@structural_variants) {
 					$struct_variant_cont++;
-					print STRUCT_VAR $struct_variant_cont."\t".$struc_variation_feature->display_id."\t".$struc_variation_feature->seq_region_name."\t".$struc_variation_feature->seq_region_start."\t".$struc_variation_feature->seq_region_end."\t".$struc_variation_feature->strand."\t";
-					print STRUCT_VAR $struc_variation_feature->class_SO_term."\t".$struc_variation_feature->structural_variation->study->name."\t".$struc_variation_feature->structural_variation->study->url."\t".$struc_variation_feature->structural_variation->study->description."\t";
-					print STRUCT_VAR $struc_variation_feature->structural_variation->source."\t".$struc_variation_feature->structural_variation->source_description."\n";
+					
+					#print STRUCT_VAR $struct_variant_cont."\t".
+					#$struc_variation_feature->display_id."\t".
+					#$struc_variation_feature->seq_region_name."\t".
+					#$struc_variation_feature->seq_region_start."\t".
+					#$struc_variation_feature->seq_region_end."\t".
+					#$struc_variation_feature->strand."\t";
+					
+					$hVariationFeature{'struct_variant_cont'} = $struct_variant_cont;
+					$hVariationFeature{'display_id'} = $struc_variation_feature->display_id;
+					$hVariationFeature{'seq_region_name'} = $struc_variation_feature->seq_region_name;
+					$hVariationFeature{'seq_region_start'} = $struc_variation_feature->seq_region_start;
+					$hVariationFeature{'seq_region_end'} = $struc_variation_feature->seq_region_end;
+					$hVariationFeature{'strand'} = $struc_variation_feature->strand;
+					
+					#print STRUCT_VAR $struc_variation_feature->class_SO_term."\t".
+					#$struc_variation_feature->structural_variation->study->name."\t".
+					#$struc_variation_feature->structural_variation->study->url."\t".
+					#$struc_variation_feature->structural_variation->study->description."\t";
+					
+					$hVariationFeature{'study->name'} = $struc_variation_feature->structural_variation->study->name;
+					$hVariationFeature{'study->url'} = $struc_variation_feature->structural_variation->study->url;
+					$hVariationFeature{'study->description'} = $struc_variation_feature->structural_variation->study->description;
+
+
+					#print STRUCT_VAR $struc_variation_feature->structural_variation->source."\t".
+					#$struc_variation_feature->structural_variation->source_description."\n";
+					
+					$hVariationFeature{'source'} = $struc_variation_feature->structural_variation->source;
+					$hVariationFeature{'source_description'} = $struc_variation_feature->structural_variation->source_description;
+					
+					my $json = encode_json \%hVariationFeature;
+					print $json."\n";
+					
 				}
 			}	
 		}
