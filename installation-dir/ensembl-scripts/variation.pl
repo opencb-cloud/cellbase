@@ -132,7 +132,11 @@ my ($snp_slice_left, $snp_slice_right, $trans_stable_id, $trans);
 
 my %hVariationFeature = ();
 
+my %hstudy =(); 
+
 my %hVariation = ();
+
+my %hvar_annot = ();
 
 ######## END DECLARE VARIATION HASH #############################
 
@@ -226,10 +230,11 @@ foreach my $chrom_obj(@chroms) {
 					#$struc_variation_feature->structural_variation->study->url."\t".
 					#$struc_variation_feature->structural_variation->study->description."\t";
 					
-					$hVariationFeature{'study->name'} = $struc_variation_feature->structural_variation->study->name;
-					$hVariationFeature{'study->url'} = $struc_variation_feature->structural_variation->study->url;
-					$hVariationFeature{'study->description'} = $struc_variation_feature->structural_variation->study->description;
-
+					$hVariationFeature{'study'}->{'name'} = $struc_variation_feature->structural_variation->study->name;
+					$hVariationFeature{'study'}->{'url'} = $struc_variation_feature->structural_variation->study->url;
+					$hVariationFeature{'study'}->{'description'} = $struc_variation_feature->structural_variation->study->description;
+					
+					#push(%hVariationFeature,\%hstudy);
 
 					#print STRUCT_VAR $struc_variation_feature->structural_variation->source."\t".
 					#$struc_variation_feature->structural_variation->source_description."\n";
@@ -237,8 +242,6 @@ foreach my $chrom_obj(@chroms) {
 					$hVariationFeature{'source'} = $struc_variation_feature->structural_variation->source;
 					$hVariationFeature{'source_description'} = $struc_variation_feature->structural_variation->source_description;
 					
-					my $json = encode_json \%hVariationFeature;
-					print $json."\n";
 					
 				}
 			}	
@@ -270,21 +273,46 @@ print @snps."\n";
 			##### SNP phenotype annotation	####################################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
 			if(@var_annots > 0) {
+				my @snp_array;
 				foreach my $var_annot(@var_annots) {
 					my $assoc_gene = $var_annot->associated_gene();
 					$assoc_gene =~ s/ //g;
 					my @assoc_genes = split(",", $assoc_gene);
+					
 					foreach $assoc_gene(@assoc_genes) {
 						$snp_phen_annot_cont++;
-						print SNP_PHEN_ANNOT "$snp_phen_annot_cont\t$snp_cont\t".$var_annot->source_name()."\t".$assoc_gene."\t"
-									.$var_annot->associated_variant_risk_allele()."\t".$var_annot->risk_allele_freq_in_controls()."\t".$var_annot->p_value()."\t"
-									.$var_annot->phenotype_name()."\t".$var_annot->phenotype_description()."\t"
-									.$var_annot->study_name()."\t".$var_annot->study_type()."\t".$var_annot->study_url()."\t".$var_annot->study_description()."\n";
-									
+						#print SNP_PHEN_ANNOT "$snp_phen_annot_cont\t$snp_cont\t".
+						#$var_annot->source_name()."\t".$assoc_gene."\t".
+						#$var_annot->associated_variant_risk_allele()."\t".
+						#$var_annot->risk_allele_freq_in_controls()."\t".
+						#$var_annot->p_value()."\t".
+						#$var_annot->phenotype_name()."\t".
+						#$var_annot->phenotype_description()."\t".
+						#$var_annot->study_name()."\t".
+						#$var_annot->study_type()."\t".
+						#$var_annot->study_url()."\t".
+						#$var_annot->study_description()."\n";
+						
+						$hvar_annot{'source_name'} = $var_annot->source_name();
+						$hvar_annot{'associated_variant_risk_allele'} = $var_annot->associated_variant_risk_allele()."\t".
+						$hvar_annot{'risk_allele_freq_in_controls'} = $var_annot->risk_allele_freq_in_controls()."\t".
+						$hvar_annot{'p_value'} = $var_annot->p_value()."\t".
+						$hvar_annot{'phenotype_name'} = $var_annot->phenotype_name()."\t".
+						$hvar_annot{'phenotype_description'} = $var_annot->phenotype_description()."\t".
+						$hvar_annot{'study_name'} = $var_annot->study_name()."\t".
+						$hvar_annot{'study_type'} = $var_annot->study_type()."\t".
+						$hvar_annot{'study_url'} = $var_annot->study_url()."\t".
+						$hvar_annot{'study_description'} = $var_annot->study_description()."\n";
+						
+						push(@snp_array,\%hvar_annot);									
 					}
+					
 				}
+				$hVariationFeature{'phenotype'} = \@snp_array;
+			} else {
+				print "\n"."SNP phenotype annotation is false"."\n";
 			}
-		
+			
 		
 			##### XRefs (Synonyms)	####################################################
 			@syn_sources = @{$variation->get_all_synonym_sources()};
@@ -295,9 +323,13 @@ print @snps."\n";
 						$snp_xref_cont++;
 						print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
 					}
+					$hVariationFeature{'xrefs'} = \@all_syns;
 				}
 			}
 		
+			print ">>>>".$variation_feature->variation_name()."\n";
+			my $json = encode_json \%hVariationFeature;
+			print $json."\n";
 		
 			##### Population	####################################################
 			%snp_freqs = {};
