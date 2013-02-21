@@ -4,6 +4,8 @@ use strict;
 use Getopt::Long;
 use Data::Dumper;
 
+use JSON;
+
 use DB_CONFIG;
 
 
@@ -96,7 +98,9 @@ if($chrom eq 'all') {
 	foreach my $chrom_id(@chrom_ids_sorted) {
 		push(@chroms, $slice_adaptor->fetch_by_region( 'chromosome', $chrom_id));
 	}
-	print ">>>>".@chroms."\n";
+	#print ">>>>".@chroms."\n";
+	#print to_json(\@chroms. "\n");
+	
 print Dumper \@chroms if $verbose;
 }else {
 	my @chroms_ids = split(",", $chrom);
@@ -168,6 +172,8 @@ foreach my $chrom_obj(@chroms) {
 	
 	print "snp_cont: $snp_cont, chromosome:  ".$chrom_obj->seq_region_name.", end: ".$chrom_obj->end."\n" if $verbose;
 	
+
+	
 	$slice_start = 1;
 	$slice_end = $slice_start + $slice_max_length - 1;
 	while($slice_start < $chrom_obj->end) {
@@ -217,6 +223,16 @@ print @snps."\n";
 			}
 			print SNP $snp_cont."\t".$variation_feature->variation_name()."\t".$chrom->seq_region_name."\t".$variation_feature->seq_region_start."\t".$variation_feature->seq_region_end."\t".$variation_feature->strand."\t".$variation_feature->map_weight."\t".$variation_feature->allele_string."\t".$variation->ancestral_allele."\t".$source_version."\t".$variation_feature->display_consequence('SO')."\t".join(",",@{$variation_feature->consequence_type('SO')})."\t".$variation_feature->display_consequence()."\t".$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
+			#principio chapuzas
+			
+			#print "fasdfasdfasdfasdf";
+			
+			local $JSON::ConvBlessed = 1;
+			#my $json = JSON::XS->new();			
+			
+			print to_json($variation_feature);
+
+			#fin chapuzas
 			
 			##### SNP phenotype annotation	####################################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
@@ -231,6 +247,7 @@ print @snps."\n";
 									.$var_annot->associated_variant_risk_allele()."\t".$var_annot->risk_allele_freq_in_controls()."\t".$var_annot->p_value()."\t"
 									.$var_annot->phenotype_name()."\t".$var_annot->phenotype_description()."\t"
 									.$var_annot->study_name()."\t".$var_annot->study_type()."\t".$var_annot->study_url()."\t".$var_annot->study_description()."\n";
+									
 					}
 				}
 			}
