@@ -156,8 +156,10 @@ open (SNP_POP_FREQ,">$outdir/snp_population_frequency.txt") || die "Cannot open 
 open (SNP_PHEN_ANNOT,">$outdir/snp_phenotype_annotation.txt") || die "Cannot open $outdir file";
 open (SNP_XREF,">$outdir/snp_xref.txt") || die "Cannot open $outdir file";
 open (STRUCT_VAR,">$outdir/structural_variation.txt") || die "Cannot open $outdir file";
-open (SNP_TEST,">$outdir/snp_test.txt") || die "Cannot open $outdir file";
-
+## my JSON file
+open (CONSEQUENCE,">$outdir/consequence.json") || die "Cannot open $outdir file";
+open (STRUCTURAL,">$outdir/structural.json") || die "Cannot open $outdir file";
+open (VARIATION,">$outdir/variation.json") || die "Cannot open $outdir file";
 
 ## calculate CONSEQUENCE_TYPE
 open (CONSEQ_TYPE,">$outdir/consequence_type.txt") || die "Cannot open $outdir file";
@@ -169,8 +171,6 @@ foreach my $key(keys(%OVERLAP_CONSEQUENCES)) {
 	print CONSEQ_TYPE $consq_type_id."\t".$OVERLAP_CONSEQUENCES{$key}->SO_accession."\t".$OVERLAP_CONSEQUENCES{$key}->SO_term."\t".$OVERLAP_CONSEQUENCES{$key}->feature_SO_term."\t";
 	print CONSEQ_TYPE $OVERLAP_CONSEQUENCES{$key}->display_term."\t".$OVERLAP_CONSEQUENCES{$key}->rank."\t";
 	print CONSEQ_TYPE $OVERLAP_CONSEQUENCES{$key}->NCBI_term."\t".$OVERLAP_CONSEQUENCES{$key}->label."\t".$OVERLAP_CONSEQUENCES{$key}->description."\n";
-	
-	
 	
 }
 close(CONSEQ_TYPE);
