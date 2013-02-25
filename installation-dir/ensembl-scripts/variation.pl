@@ -426,11 +426,13 @@ foreach my $chrom_obj(@chroms) {
 				## printing frequencies
 				foreach my $pop(keys(%snp_freqs)) {
 					if(defined $pop) {
+						## init empty values with 0s
 						$snp_freqs{$pop}{$all2} = 0 if ($snp_freqs{$pop}{$all2} eq '');
 						$snp_freqs{$pop}{$all1} = 0 if ($snp_freqs{$pop}{$all1} eq '');
 						$snp_freqs{$pop}{$all1."/".$all1} = 0 if ($snp_freqs{$pop}{$all1."/".$all1} eq '');
 						$snp_freqs{$pop}{$all1."/".$all2} = 0 if ($snp_freqs{$pop}{$all1."/".$all2} eq '');
 						$snp_freqs{$pop}{$all2."/".$all2} = 0 if ($snp_freqs{$pop}{$all2."/".$all2} eq '');
+						
 						if($snp_freqs{$pop}{$all1} != 0 || $snp_freqs{$pop}{$all2} != 0) {
 							my ($pop_source, $pop_code) = split(":", $pop);
 							$pop_code =~ s/HapMap-//i;
