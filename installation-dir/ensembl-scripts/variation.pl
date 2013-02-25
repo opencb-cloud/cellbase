@@ -312,7 +312,6 @@ foreach my $chrom_obj(@chroms) {
 			$jsonVariation{'soConsequenceType'} = join(",",@{$variation_feature->consequence_type('SO')});
 			$jsonVariation{'displayEnsemblConsequenceType'} = $variation_feature->display_consequence();
 			$jsonVariation{'sequence'} = $snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq;
-		
 			
 			##### SNP phenotype annotation	####################################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
@@ -340,22 +339,21 @@ foreach my $chrom_obj(@chroms) {
 						#$var_annot->study_url()."\t".
 						#$var_annot->study_description()."\n";
 						
-						$jsonphenannot{'source_name'} = $var_annot->source_name();
-						$jsonphenannot{'associated_variant_risk_allele'} = $var_annot->associated_variant_risk_allele()."\t".
-						$jsonphenannot{'risk_allele_freq_in_controls'} = $var_annot->risk_allele_freq_in_controls()."\t".
-						$jsonphenannot{'p_value'} = $var_annot->p_value()."\t".
-						$jsonphenannot{'phenotype_name'} = $var_annot->phenotype_name()."\t".
-						$jsonphenannot{'phenotype_description'} = $var_annot->phenotype_description()."\t".
-						$jsonphenannot{'study_name'} = $var_annot->study_name()."\t".
-						$jsonphenannot{'study_type'} = $var_annot->study_type()."\t".
-						$jsonphenannot{'study_url'} = $var_annot->study_url()."\t".
-						$jsonphenannot{'study_description'} = $var_annot->study_description()."\n";
+						$jsonphenannot{'sourceName'} = $var_annot->source_name();
+						$jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele()."\t".
+						$jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls()."\t".
+						$jsonphenannot{'pValue'} = $var_annot->p_value()."\t".
+						$jsonphenannot{'phenotypeName'} = $var_annot->phenotype_name()."\t".
+						$jsonphenannot{'phenotypeDescription'} = $var_annot->phenotype_description()."\t".
+						$jsonphenannot{'studyName'} = $var_annot->study_name()."\t".
+						$jsonphenannot{'studyType'} = $var_annot->study_type()."\t".
+						$jsonphenannot{'studyUrl'} = $var_annot->study_url()."\t".
+						$jsonphenannot{'studyDescription'} = $var_annot->study_description()."\n";
 						
 						push(@snp_array,\%jsonphenannot);									
 					}
 					
 				}
-				#esto hay que cambiarlo por el hash correcto:
 				$jsonVariation{'phenotype'} = \@snp_array;
 			} else {
 				
@@ -529,7 +527,11 @@ foreach my $chrom_obj(@chroms) {
 			}
 			
 			my $json = encode_json \%jsonVariation;
+			my $json2 = encode_json \%jsonStructural;
+			print "---VARIATION---> \n";
 			print $json."\n";
+			print "---STRUCTURAL---> \n";
+			print $json2."\n";
 			
 			# borro la direccion de mem. El array de ensembl se acumula y revienta la ram
 			undef (@trans_snps);
