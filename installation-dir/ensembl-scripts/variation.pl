@@ -10,7 +10,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
-my $chrom = '1';
+my $chrom = '22';
 my $transcript_file = 'Homo sapiens';
 my $outdir = "/tmp/$species";
 my $verbose = '0';
@@ -274,7 +274,8 @@ foreach my $chrom_obj(@chroms) {
 		
 		foreach my $variation_feature(@snps) {
 
-			%jsonVariation = (); print "Limpiando estructura \n";
+			%jsonVariation = (); 
+#			print "Limpiando estructura \n";
 
 			$snp_cont++;
 			$variation = $variation_feature->variation();
@@ -306,12 +307,22 @@ foreach my $chrom_obj(@chroms) {
 			#$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
 			
-			$jsonVariation{'variationType'} = "variation";
+			## this field allow us to discriminate between SNV and Structrural variants
+            $jsonStructural{'variationType'} = "SNV";
+			
+#			my %hgvs_hash = %{$variation_feature->get_all_hgvs_notations()};
+#			my @hgvs_arr = ();
+#			foreach my $key(keys %hgvs_hash) {
+#				push(@hgvs_arr, \%hgvs_hash{$key});
+#			}
+			
+#			$jsonVariation{'variationType'} = "variation";
 			$jsonVariation{'id'} = $variation_feature->variation_name();
 			$jsonVariation{'chromosome'} = $chrom->seq_region_name;
 			$jsonVariation{'start'} = $variation_feature->seq_region_start;
 			$jsonVariation{'end'} = $variation_feature->seq_region_end;
 			$jsonVariation{'strand'} = $variation_feature->strand;
+			$jsonVariation{'hgvs'} = $variation_feature->get_all_hgvs_notations();
 			$jsonVariation{'mapWeight'} = $variation_feature->map_weight;
 			$jsonVariation{'alleleString'} = $variation_feature->allele_string;
 			$jsonVariation{'ancestralAllele'} = $variation->ancestral_allele;
@@ -325,16 +336,28 @@ foreach my $chrom_obj(@chroms) {
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
 			if(@var_annots > 0) {
 				
-				print "\n"."SNP phenotype annotation is TRUE"."\n";
-				
-				my @snp_phenotype_array;
+#				print "\n"."SNP phenotype annotation is TRUE"."\n";
+				my @snp_phenotype_array = ();
 				foreach my $var_annot(@var_annots) {
 					my $assoc_gene = $var_annot->associated_gene();
 					$assoc_gene =~ s/ //g;
 					my @assoc_genes = split(",", $assoc_gene);
 					
+					my %jsonphenannot = ();
+                    $jsonphenannot{'source'} = $var_annot->source_name();
+                    $jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele();
+                    $jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls();
+                    $jsonphenannot{'pValue'} = $var_annot->p_value();
+                    $jsonphenannot{'name'} = $var_annot->phenotype_name();
+                    $jsonphenannot{'description'} = $var_annot->phenotype_description();
+                    $jsonphenannot{'study'}->{'name'} = $var_annot->study_name();
+                    $jsonphenannot{'study'}->{'type'} = $var_annot->study_type();
+                    $jsonphenannot{'study'}->{'url'} = $var_annot->study_url();
+                    $jsonphenannot{'study'}->{'description'} = $var_annot->study_description();
+
+                    my @assoc_genes = ();                        
 					foreach $assoc_gene(@assoc_genes) {
-						$snp_phen_annot_cont++;
+#						$snp_phen_annot_cont++;
 						#print SNP_PHEN_ANNOT "$snp_phen_annot_cont\t$snp_cont\t".
 						#$var_annot->source_name()."\t".$assoc_gene."\t".
 						#$var_annot->associated_variant_risk_allele()."\t".
@@ -346,27 +369,15 @@ foreach my $chrom_obj(@chroms) {
 						#$var_annot->study_type()."\t".
 						#$var_annot->study_url()."\t".
 						#$var_annot->study_description()."\n";
-						
-						$jsonphenannot{'source'} = $var_annot->source_name();
-						$jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele();
-						$jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls();
-						$jsonphenannot{'pValue'} = $var_annot->p_value();
-						$jsonphenannot{'name'} = $var_annot->phenotype_name();
-						$jsonphenannot{'description'} = $var_annot->phenotype_description();
-						$jsonphenannot{'study'}->{'name'} = $var_annot->study_name();
-						$jsonphenannot{'study'}->{'type'} = $var_annot->study_type();
-						$jsonphenannot{'study'}->{'url'} = $var_annot->study_url();
-						$jsonphenannot{'study'}->{'description'} = $var_annot->study_description();
-						
-						push(@snp_phenotype_array,\%jsonphenannot);									
+						push(@assoc_genes, $assoc_gene);
 					}
+					$jsonphenannot{'associatedGenes'} = \@assoc_genes;
 					
+					push(@snp_phenotype_array, \%jsonphenannot);									
 				}
 				$jsonVariation{'phenotype'} = \@snp_phenotype_array;
 			} else {
-				
-				print "\n"."SNP phenotype annotation is FALSE"."\n";
-			
+#				print "\n"."SNP phenotype annotation is FALSE"."\n";			
 			}
 			
 		
@@ -374,38 +385,36 @@ foreach my $chrom_obj(@chroms) {
 			@syn_sources = @{$variation->get_all_synonym_sources()};
 			if(@syn_sources > 0) {
 				
-				print "\n"."XRefs (Synonyms) is TRUE"."\n";
-				
+#				print "\n"."XRefs (Synonyms) is TRUE"."\n";				
 				my @snp_xref_array;
 				foreach my $syn_source(@syn_sources) {
 					@all_syns = @{$variation->get_all_synonyms($syn_source)};
 					foreach my $syn(@all_syns) {
 						$snp_xref_cont++;
 						#print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
-						
+
+						my %jsonxrefs = ();
 						$jsonxrefs{'id'} = $syn;
-						$jsonxrefs{'source'} = $syn_source;
-						
-						push(@snp_xref_array,\%jsonxrefs);   
+                        $jsonxrefs{'source'} = $syn_source;
+                        
+						push(@snp_xref_array, \%jsonxrefs);   
 					}
 				}
 				$jsonVariation{'xrefs'} = \@snp_xref_array;
 			} else {
-
-				print "\n"."XRefs (Synonyms) is FALSE"."\n";
-
+#				print "\n"."XRefs (Synonyms) is FALSE"."\n";
 			}
 		
 		
 			##### Population	####################################################
 			%snp_freqs = {};
 			
-			my @snp_pop_array;
+			my @snp_pop_array = ();
 			
 			@pop_genotypes = @{$variation->get_all_PopulationGenotypes()};
 			if(@pop_genotypes > 0) {
 				
-				print "\n"."Population is TRUE"."\n";
+#				print "\n"."Population is TRUE"."\n";
 				
 				my ($all1, $all2) = split("/", $variation_feature->allele_string);
 				
@@ -452,7 +461,7 @@ foreach my $chrom_obj(@chroms) {
 							#"\t$all1/$all1\t".$snp_freqs{$pop}{$all1."/".$all1}.
 							#"\t$all1/$all2\t".$snp_freqs{$pop}{$all1."/".$all2}.
 							#"\t$all2/$all2\t".$snp_freqs{$pop}{$all2."/".$all2}."\n";
-							
+							my %jsonpopulation = ();
 							$jsonpopulation{'code'} = $pop_code;
 							$jsonpopulation{'source'} = $pop_source;
 							$jsonpopulation{$all1} = $snp_freqs{$pop}{$all1};
@@ -461,15 +470,13 @@ foreach my $chrom_obj(@chroms) {
 							$jsonpopulation{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
 							$jsonpopulation{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
 					
-							push(@snp_pop_array,\%jsonpopulation);
+							push(@snp_pop_array, \%jsonpopulation);
 						}	
 					}
-					$jsonVariation{'population'} = \@snp_pop_array;
+					$jsonVariation{'population_frequencies'} = \@snp_pop_array;
 				}
 			} else {
-				
-				print "\n"."Population is FALSE"."\n";
-				
+#				print "\n"."Population is FALSE"."\n";
 			}
 		
 		
@@ -551,12 +558,13 @@ foreach my $chrom_obj(@chroms) {
 				}
 			}
 			
+#			my $json2 = encode_json \%jsonStructural;
+#			print "---STRUCTURAL---> \n";
+#			print $json2."\n";
+
 			my $json = encode_json \%jsonVariation;
-			my $json2 = encode_json \%jsonStructural;
 			print "---VARIATION---> \n";
 			print $json."\n";
-			print "---STRUCTURAL---> \n";
-			print $json2."\n";
 			
 			# borro la direccion de mem. El array de ensembl se acumula y revienta la ram
 			undef (@trans_snps);
@@ -567,6 +575,7 @@ foreach my $chrom_obj(@chroms) {
 			undef (@pop_genotypes);
 			undef (@trans_var_alleles);
 		}
+		
 		# tambien para corregir el leak de memoria
 		undef (@snps);
 		undef (@structural_variants);
