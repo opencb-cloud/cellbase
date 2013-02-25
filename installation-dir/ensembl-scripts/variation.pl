@@ -227,10 +227,10 @@ foreach my $chrom_obj(@chroms) {
 					#$struc_variation_feature->strand."\t";
 					
 					$jsonStructural{'struct_variant_cont'} = $struct_variant_cont;
-					$jsonStructural{'display_id'} = $struc_variation_feature->display_id;
-					$jsonStructural{'seq_region_name'} = $struc_variation_feature->seq_region_name;
-					$jsonStructural{'seq_region_start'} = $struc_variation_feature->seq_region_start;
-					$jsonStructural{'seq_region_end'} = $struc_variation_feature->seq_region_end;
+					$jsonStructural{'id'} = $struc_variation_feature->display_id;
+					$jsonStructural{'chromosome'} = $struc_variation_feature->seq_region_name;
+					$jsonStructural{'start'} = $struc_variation_feature->seq_region_start;
+					$jsonStructural{'end'} = $struc_variation_feature->seq_region_end;
 					$jsonStructural{'strand'} = $struc_variation_feature->strand;
 					
 					#print STRUCT_VAR $struc_variation_feature->class_SO_term."\t".
@@ -248,8 +248,12 @@ foreach my $chrom_obj(@chroms) {
 					#$struc_variation_feature->structural_variation->source_description."\n";
 					
 					$jsonStructural{'source'} = $struc_variation_feature->structural_variation->source;
-					$jsonStructural{'source_description'} = $struc_variation_feature->structural_variation->source_description;
+					$jsonStructural{'sourceDescription'} = $struc_variation_feature->structural_variation->source_description;
 					
+					$jsonStructural{'displaySoConsequence'} = $struc_variation_feature->class_SO_term;
+					
+					## this field allow us to discriminate between SNV and Structrural variants
+					$jsonStructural{'variationType'} = "structural_variation";
 				}
 			}	
 		}
@@ -295,18 +299,19 @@ foreach my $chrom_obj(@chroms) {
 			#$variation_feature->display_consequence()."\t".
 			#$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
-			$jsonVariation{'variation_name'} = $variation_feature->variation_name();
-			$jsonVariation{'seq_region_name'} = $chrom->seq_region_name;
-			$jsonVariation{'seq_region_start'} = $variation_feature->seq_region_start;
-			$jsonVariation{'seq_region_end'} = $variation_feature->seq_region_end;
+			$jsonVariation{'id'} = $variation_feature->variation_name();
+			$jsonVariation{'chromosome'} = $chrom->seq_region_name;
+			$jsonVariation{'start'} = $variation_feature->seq_region_start;
+			$jsonVariation{'end'} = $variation_feature->seq_region_end;
 			$jsonVariation{'strand'} = $variation_feature->strand;
-			$jsonVariation{'map_weight'} = $variation_feature->map_weight;
-			$jsonVariation{'allele_string'} = $variation_feature->allele_string;
-			$jsonVariation{'ancestral_allele'} = $variation->ancestral_allele;
-			$jsonVariation{'source_version'} = $source_version;
-			$jsonVariation{'display_consequence'} = $variation_feature->display_consequence('SO');
-			$jsonVariation{'consequence_type'} = $variation_feature->display_consequence();
-			$jsonVariation{'alleleslicebothsides'} = $snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq;
+			$jsonVariation{'mapWeight'} = $variation_feature->map_weight;
+			$jsonVariation{'alleleString'} = $variation_feature->allele_string;
+			$jsonVariation{'ancestralAllele'} = $variation->ancestral_allele;
+			$jsonVariation{'source'} = $source_version;
+			$jsonVariation{'displaySoConsequenceType'} = $variation_feature->display_consequence('SO');
+			$jsonVariation{'soConsequenceType'} = join(",",@{$variation_feature->consequence_type('SO')});
+			$jsonVariation{'displayEnsemblConsequenceType'} = $variation_feature->display_consequence();
+			$jsonVariation{'sequence'} = $snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq;
 		
 			
 			##### SNP phenotype annotation	####################################################
