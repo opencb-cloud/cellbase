@@ -136,6 +136,8 @@ my %jsonConsequence = ();
 
 my %jsonVariation = ();
 
+my %jsonTranscript = ();
+
 my %jsonphenannot = ();
 
 my %jsonxrefs = ();
@@ -255,7 +257,7 @@ foreach my $chrom_obj(@chroms) {
 					$jsonStructural{'displaySoConsequence'} = $struc_variation_feature->class_SO_term;
 					
 					## this field allow us to discriminate between SNV and Structrural variants
-					$jsonStructural{'variationType'} = "structural_variation";
+					$jsonStructural{'variationType'} = "structural";
 				}
 			}	
 		}
@@ -301,6 +303,8 @@ foreach my $chrom_obj(@chroms) {
 			#$variation_feature->display_consequence()."\t".
 			#$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
+			
+			$jsonVariation{'variationType'} = "variation";
 			$jsonVariation{'id'} = $variation_feature->variation_name();
 			$jsonVariation{'chromosome'} = $chrom->seq_region_name;
 			$jsonVariation{'start'} = $variation_feature->seq_region_start;
@@ -347,10 +351,10 @@ foreach my $chrom_obj(@chroms) {
 						$jsonphenannot{'pValue'} = $var_annot->p_value();
 						$jsonphenannot{'name'} = $var_annot->phenotype_name();
 						$jsonphenannot{'description'} = $var_annot->phenotype_description();
-						$jsonphenannot{'studyName'} = $var_annot->study_name();
-						$jsonphenannot{'studyType'} = $var_annot->study_type();
-						$jsonphenannot{'studyUrl'} = $var_annot->study_url();
-						$jsonphenannot{'studyDescription'} = $var_annot->study_description();
+						$jsonphenannot{'study'}->{'name'} = $var_annot->study_name();
+						$jsonphenannot{'study'}->{'type'} = $var_annot->study_type();
+						$jsonphenannot{'study'}->{'url'} = $var_annot->study_url();
+						$jsonphenannot{'study'}->{'description'} = $var_annot->study_description();
 						
 						push(@snp_phenotype_array,\%jsonphenannot);									
 					}
@@ -369,6 +373,7 @@ foreach my $chrom_obj(@chroms) {
 			if(@syn_sources > 0) {
 				
 				print "\n"."XRefs (Synonyms) is TRUE"."\n";
+				
 				my @snp_xref_array;
 				foreach my $syn_source(@syn_sources) {
 					@all_syns = @{$variation->get_all_synonyms($syn_source)};
@@ -381,11 +386,12 @@ foreach my $chrom_obj(@chroms) {
 						
 						push(@snp_xref_array,\%jsonxrefs);   
 					}
-					#$jsonVariation{'xrefs'} = \@all_syns;
 				}
 				$jsonVariation{'xrefs'} = \@snp_xref_array;
 			} else {
+
 				print "\n"."XRefs (Synonyms) is FALSE"."\n";
+
 			}
 		
 		
@@ -460,6 +466,7 @@ foreach my $chrom_obj(@chroms) {
 			##### TranscriptVariations	####################################################
 			@trans_snps = @{$variation_feature->get_all_TranscriptVariations()};
 			foreach my $trans_snp(@trans_snps) {
+				my @snp_consequence_array;
 				$snp_to_trans_cont++;
 				$trans_stable_id = $trans_snp->transcript()->stable_id();
 				$trans = $trans_snp->transcript();
@@ -503,6 +510,7 @@ foreach my $chrom_obj(@chroms) {
 				
 				print 
 				"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
+				"trans_stable_id: ". $trans_stable_id."\n".
 				"snp_cont: ".$snp_cont."\n".
 				"ids_to_pk{trans_stable_id}".$ids_to_pk{$trans_stable_id}."\n".
 				"consequence_type_ids{trans_snp->most_severe_OverlapConsequence()->SO_term}".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\n".
@@ -512,6 +520,10 @@ foreach my $chrom_obj(@chroms) {
 				"translation_end".$translation_end."\n".
 				"cds_start".$cds_start."\n".
 				"cds_end".$cds_end."\n".
+				
+				$jsonTranscript{'id'} = $trans_stable_id;
+				
+				
 				
 				$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
 				foreach(@{$trans_snp->consequence_type('SO')}) {
