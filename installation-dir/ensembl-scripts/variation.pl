@@ -130,13 +130,19 @@ my ($snp_slice_left, $snp_slice_right, $trans_stable_id, $trans);
 
 ##################### DECLARE VARIATION HASH ####################
 
-my %hVariationFeature = ();
+my %jsonStructural = ();
+
+my %jsonConsequence = ();
+
+my %jsonVariation = ();
+
+my %jsonphenannot = ();
+
+my %jsonpopulation = ();
 
 my %hstudy =(); 
 
 my %hVariation = ();
-
-my %hvar_annot = ();
 
 ######## END DECLARE VARIATION HASH #############################
 
@@ -194,6 +200,8 @@ foreach my $chrom_obj(@chroms) {
 	$slice_end = $slice_start + $slice_max_length - 1;
 	while($slice_start < $chrom_obj->end) {
 		
+		print "slice start ---> ". $slice_start . "\n";
+		
 		## get just until the end ofchromosome
 		if($slice_end > $chrom_obj->end) {
 			$slice_end = $chrom_obj->end;
@@ -218,30 +226,29 @@ foreach my $chrom_obj(@chroms) {
 					#$struc_variation_feature->seq_region_end."\t".
 					#$struc_variation_feature->strand."\t";
 					
-					$hVariationFeature{'struct_variant_cont'} = $struct_variant_cont;
-					$hVariationFeature{'display_id'} = $struc_variation_feature->display_id;
-					$hVariationFeature{'seq_region_name'} = $struc_variation_feature->seq_region_name;
-					$hVariationFeature{'seq_region_start'} = $struc_variation_feature->seq_region_start;
-					$hVariationFeature{'seq_region_end'} = $struc_variation_feature->seq_region_end;
-					$hVariationFeature{'strand'} = $struc_variation_feature->strand;
+					$jsonStructural{'struct_variant_cont'} = $struct_variant_cont;
+					$jsonStructural{'display_id'} = $struc_variation_feature->display_id;
+					$jsonStructural{'seq_region_name'} = $struc_variation_feature->seq_region_name;
+					$jsonStructural{'seq_region_start'} = $struc_variation_feature->seq_region_start;
+					$jsonStructural{'seq_region_end'} = $struc_variation_feature->seq_region_end;
+					$jsonStructural{'strand'} = $struc_variation_feature->strand;
 					
 					#print STRUCT_VAR $struc_variation_feature->class_SO_term."\t".
 					#$struc_variation_feature->structural_variation->study->name."\t".
 					#$struc_variation_feature->structural_variation->study->url."\t".
 					#$struc_variation_feature->structural_variation->study->description."\t";
 					
-					$hVariationFeature{'study'}->{'name'} = $struc_variation_feature->structural_variation->study->name;
-					$hVariationFeature{'study'}->{'url'} = $struc_variation_feature->structural_variation->study->url;
-					$hVariationFeature{'study'}->{'description'} = $struc_variation_feature->structural_variation->study->description;
+					$jsonStructural{'study'}->{'name'} = $struc_variation_feature->structural_variation->study->name;
+					$jsonStructural{'study'}->{'url'} = $struc_variation_feature->structural_variation->study->url;
+					$jsonStructural{'study'}->{'description'} = $struc_variation_feature->structural_variation->study->description;
 					
 					#push(%hVariationFeature,\%hstudy);
 
 					#print STRUCT_VAR $struc_variation_feature->structural_variation->source."\t".
 					#$struc_variation_feature->structural_variation->source_description."\n";
 					
-					$hVariationFeature{'source'} = $struc_variation_feature->structural_variation->source;
-					$hVariationFeature{'source_description'} = $struc_variation_feature->structural_variation->source_description;
-					
+					$jsonStructural{'source'} = $struc_variation_feature->structural_variation->source;
+					$jsonStructural{'source_description'} = $struc_variation_feature->structural_variation->source_description;
 					
 				}
 			}	
@@ -251,9 +258,14 @@ foreach my $chrom_obj(@chroms) {
 		## FETCHING SNPs FROM SLICE	#######################
 		###################################################
 		@snps = @{$chrom->get_all_VariationFeatures()};
-print $chrom->seq_region_name."\n";
-print @snps."\n";
+		print "$chrom->seq_region_name ---> ".$chrom->seq_region_name."\n";
+		print @snps."\n";
+		
+		
 		foreach my $variation_feature(@snps) {
+
+			%jsonVariation = (); print "Limpiando estructura \n";
+
 			$snp_cont++;
 			$variation = $variation_feature->variation();
 		
@@ -267,12 +279,42 @@ print @snps."\n";
 			if(defined $variation_feature->source_version && $variation_feature->source_version ne '') {
 				$source_version = $source_version."-".$variation_feature->source_version;
 			}
-			print SNP $snp_cont."\t".$variation_feature->variation_name()."\t".$chrom->seq_region_name."\t".$variation_feature->seq_region_start."\t".$variation_feature->seq_region_end."\t".$variation_feature->strand."\t".$variation_feature->map_weight."\t".$variation_feature->allele_string."\t".$variation->ancestral_allele."\t".$source_version."\t".$variation_feature->display_consequence('SO')."\t".join(",",@{$variation_feature->consequence_type('SO')})."\t".$variation_feature->display_consequence()."\t".$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
 			
+			#print SNP $snp_cont."\t".
+			#$variation_feature->variation_name()."\t".
+			#$chrom->seq_region_name."\t".
+			#$variation_feature->seq_region_start."\t".
+			#$variation_feature->seq_region_end."\t".
+			#$variation_feature->strand."\t".
+			#$variation_feature->map_weight."\t".
+			#$variation_feature->allele_string."\t".
+			#$variation->ancestral_allele."\t".
+			#$source_version."\t".
+			#$variation_feature->display_consequence('SO')."\t".
+			#join(",",@{$variation_feature->consequence_type('SO')})."\t".
+			#$variation_feature->display_consequence()."\t".
+			#$snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq."\n";
+			
+			$jsonVariation{'variation_name'} = $variation_feature->variation_name();
+			$jsonVariation{'seq_region_name'} = $chrom->seq_region_name;
+			$jsonVariation{'seq_region_start'} = $variation_feature->seq_region_start;
+			$jsonVariation{'seq_region_end'} = $variation_feature->seq_region_end;
+			$jsonVariation{'strand'} = $variation_feature->strand;
+			$jsonVariation{'map_weight'} = $variation_feature->map_weight;
+			$jsonVariation{'allele_string'} = $variation_feature->allele_string;
+			$jsonVariation{'ancestral_allele'} = $variation->ancestral_allele;
+			$jsonVariation{'source_version'} = $source_version;
+			$jsonVariation{'display_consequence'} = $variation_feature->display_consequence('SO');
+			$jsonVariation{'consequence_type'} = $variation_feature->display_consequence();
+			$jsonVariation{'alleleslicebothsides'} = $snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq;
 		
+			
 			##### SNP phenotype annotation	####################################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
 			if(@var_annots > 0) {
+				
+				print "\n"."SNP phenotype annotation is TRUE"."\n";
+				
 				my @snp_array;
 				foreach my $var_annot(@var_annots) {
 					my $assoc_gene = $var_annot->associated_gene();
@@ -293,48 +335,61 @@ print @snps."\n";
 						#$var_annot->study_url()."\t".
 						#$var_annot->study_description()."\n";
 						
-						$hvar_annot{'source_name'} = $var_annot->source_name();
-						$hvar_annot{'associated_variant_risk_allele'} = $var_annot->associated_variant_risk_allele()."\t".
-						$hvar_annot{'risk_allele_freq_in_controls'} = $var_annot->risk_allele_freq_in_controls()."\t".
-						$hvar_annot{'p_value'} = $var_annot->p_value()."\t".
-						$hvar_annot{'phenotype_name'} = $var_annot->phenotype_name()."\t".
-						$hvar_annot{'phenotype_description'} = $var_annot->phenotype_description()."\t".
-						$hvar_annot{'study_name'} = $var_annot->study_name()."\t".
-						$hvar_annot{'study_type'} = $var_annot->study_type()."\t".
-						$hvar_annot{'study_url'} = $var_annot->study_url()."\t".
-						$hvar_annot{'study_description'} = $var_annot->study_description()."\n";
+						$jsonphenannot{'source_name'} = $var_annot->source_name();
+						$jsonphenannot{'associated_variant_risk_allele'} = $var_annot->associated_variant_risk_allele()."\t".
+						$jsonphenannot{'risk_allele_freq_in_controls'} = $var_annot->risk_allele_freq_in_controls()."\t".
+						$jsonphenannot{'p_value'} = $var_annot->p_value()."\t".
+						$jsonphenannot{'phenotype_name'} = $var_annot->phenotype_name()."\t".
+						$jsonphenannot{'phenotype_description'} = $var_annot->phenotype_description()."\t".
+						$jsonphenannot{'study_name'} = $var_annot->study_name()."\t".
+						$jsonphenannot{'study_type'} = $var_annot->study_type()."\t".
+						$jsonphenannot{'study_url'} = $var_annot->study_url()."\t".
+						$jsonphenannot{'study_description'} = $var_annot->study_description()."\n";
 						
-						push(@snp_array,\%hvar_annot);									
+						push(@snp_array,\%jsonphenannot);									
 					}
 					
 				}
-				$hVariationFeature{'phenotype'} = \@snp_array;
+				#esto hay que cambiarlo por el hash correcto:
+				$jsonVariation{'phenotype'} = \@snp_array;
 			} else {
-				print "\n"."SNP phenotype annotation is false"."\n";
+				
+				print "\n"."SNP phenotype annotation is FALSE"."\n";
+			
 			}
 			
 		
 			##### XRefs (Synonyms)	####################################################
 			@syn_sources = @{$variation->get_all_synonym_sources()};
 			if(@syn_sources > 0) {
+				
+				print "\n"."XRefs (Synonyms) is TRUE"."\n";
+				
 				foreach my $syn_source(@syn_sources) {
 					@all_syns = @{$variation->get_all_synonyms($syn_source)};
 					foreach my $syn(@all_syns) {
 						$snp_xref_cont++;
-						print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
+						#print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
+						
+						$jsonVariation{'xrefs'}->{'syn'} = $syn;
+						$jsonVariation{'xrefs'}->{'source'} = $syn_source;
+						
 					}
-					$hVariationFeature{'xrefs'} = \@all_syns;
+					#$jsonVariation{'xrefs'} = \@all_syns;
 				}
+				
+			} else {
+				print "\n"."XRefs (Synonyms) is FALSE"."\n";
 			}
 		
-			print ">>>>".$variation_feature->variation_name()."\n";
-			my $json = encode_json \%hVariationFeature;
-			print $json."\n";
 		
 			##### Population	####################################################
 			%snp_freqs = {};
 			@pop_genotypes = @{$variation->get_all_PopulationGenotypes()};
 			if(@pop_genotypes > 0) {
+				
+				print "\n"."Population is TRUE"."\n";
+				
 				my ($all1, $all2) = split("/", $variation_feature->allele_string);
 				
 				## getting alleles frequencies
@@ -368,11 +423,31 @@ print @snps."\n";
 							my ($pop_source, $pop_code) = split(":", $pop);
 							$pop_code =~ s/HapMap-//i;
 							$snp_pop_gen_cont++;
-							print SNP_POP_FREQ "$snp_pop_gen_cont\t$snp_cont\t$pop_code\t$pop_source\t";
-							print SNP_POP_FREQ "$all1\t".$snp_freqs{$pop}{$all1}."\t$all2\t".$snp_freqs{$pop}{$all2}."\t$all1/$all1\t".$snp_freqs{$pop}{$all1."/".$all1}."\t$all1/$all2\t".$snp_freqs{$pop}{$all1."/".$all2}."\t$all2/$all2\t".$snp_freqs{$pop}{$all2."/".$all2}."\n";
+							
+							#print SNP_POP_FREQ "$snp_pop_gen_cont\t$snp_cont\t$pop_code\t$pop_source\t";
+							
+							#print SNP_POP_FREQ 
+							#"$all1\t".$snp_freqs{$pop}{$all1}.
+							#"\t$all2\t".$snp_freqs{$pop}{$all2}.
+							#"\t$all1/$all1\t".$snp_freqs{$pop}{$all1."/".$all1}.
+							#"\t$all1/$all2\t".$snp_freqs{$pop}{$all1."/".$all2}.
+							#"\t$all2/$all2\t".$snp_freqs{$pop}{$all2."/".$all2}."\n";
+							
+							$jsonVariation{'population'}->{'pop_code'} = $pop_code;
+							$jsonVariation{'population'}->{'pop_source'} = $pop_source;
+							$jsonVariation{'population'}->{$all1} = $snp_freqs{$pop}{$all1};
+							$jsonVariation{'population'}->{$all2} = $snp_freqs{$pop}{$all2};
+							$jsonVariation{'population'}->{$all1.'/'.$all1} = $snp_freqs{$pop}{$all1."/".$all1};
+							$jsonVariation{'population'}->{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
+							$jsonVariation{'population'}->{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
+							
 						}	
 					}
 				}
+			} else {
+				
+				print "\n"."Population is FALSE"."\n";
+				
 			}
 		
 		
@@ -418,15 +493,38 @@ print @snps."\n";
  					}	
  				}
 
-				print SNP2TRANS $snp_to_trans_cont."\t".$snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
+				#print SNP2TRANS $snp_to_trans_cont."\t".$snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
+				
+				print 
+				"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
+				"snp_cont: ".$snp_cont."\n".
+				"ids_to_pk{trans_stable_id}".$ids_to_pk{$trans_stable_id}."\n".
+				"consequence_type_ids{trans_snp->most_severe_OverlapConsequence()->SO_term}".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\n".
+				"cdna_start".$cdna_start."\n".
+				"cdna_end".$cdna_end."\n".
+				"translation_start".$translation_start."\n".
+				"translation_end".$translation_end."\n".
+				"cds_start".$cds_start."\n".
+				"cds_end".$cds_end."\n".
+				
 				$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
 				foreach(@{$trans_snp->consequence_type('SO')}) {
 #					print SNP2TRANS $snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$_}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
 #					$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
 					$snp_to_trans_cont_consq_type_cont++;
-					print SNP2TRANS_CONSEQ_TYPE $snp_to_trans_cont_consq_type_cont."\t".$snp_to_trans_cont."\t".$consequence_type_ids{$_}."\n";
+					#print SNP2TRANS_CONSEQ_TYPE $snp_to_trans_cont_consq_type_cont."\t".$snp_to_trans_cont."\t".$consequence_type_ids{$_}."\n";
+					
+					print "************************************************************\n".
+					"snp_to_trans_cont_consq_type_cont: ".$snp_to_trans_cont_consq_type_cont."\n".
+					"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
+					"consequence_type_ids{$_}: ".$consequence_type_ids{$_}."\n".
+					"************************************************************\n";
+					
 				}
 			}
+			
+			my $json = encode_json \%jsonVariation;
+			print $json."\n";
 			
 			# borro la direccion de mem. El array de ensembl se acumula y revienta la ram
 			undef (@trans_snps);
