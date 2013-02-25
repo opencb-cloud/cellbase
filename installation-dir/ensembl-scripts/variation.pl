@@ -136,6 +136,8 @@ my %jsonConsequence = ();
 
 my %jsonVariation = ();
 
+my %jsonpopulation = (); 
+
 my %jsonTranscript = ();
 
 my %jsonphenannot = ();
@@ -397,6 +399,9 @@ foreach my $chrom_obj(@chroms) {
 		
 			##### Population	####################################################
 			%snp_freqs = {};
+			
+			my @snp_pop_array;
+			
 			@pop_genotypes = @{$variation->get_all_PopulationGenotypes()};
 			if(@pop_genotypes > 0) {
 				
@@ -425,6 +430,7 @@ foreach my $chrom_obj(@chroms) {
 	
 				## printing frequencies
 				foreach my $pop(keys(%snp_freqs)) {
+					
 					if(defined $pop) {
 						## init empty values with 0s
 						$snp_freqs{$pop}{$all2} = 0 if ($snp_freqs{$pop}{$all2} eq '');
@@ -447,16 +453,18 @@ foreach my $chrom_obj(@chroms) {
 							#"\t$all1/$all2\t".$snp_freqs{$pop}{$all1."/".$all2}.
 							#"\t$all2/$all2\t".$snp_freqs{$pop}{$all2."/".$all2}."\n";
 							
-							$jsonVariation{'population'}->{'pop_code'} = $pop_code;
-							$jsonVariation{'population'}->{'pop_source'} = $pop_source;
-							$jsonVariation{'population'}->{$all1} = $snp_freqs{$pop}{$all1};
-							$jsonVariation{'population'}->{$all2} = $snp_freqs{$pop}{$all2};
-							$jsonVariation{'population'}->{$all1.'/'.$all1} = $snp_freqs{$pop}{$all1."/".$all1};
-							$jsonVariation{'population'}->{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
-							$jsonVariation{'population'}->{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
-							
+							$jsonpopulation{'code'} = $pop_code;
+							$jsonpopulation{'source'} = $pop_source;
+							$jsonpopulation{$all1} = $snp_freqs{$pop}{$all1};
+							$jsonpopulation{$all2} = $snp_freqs{$pop}{$all2};
+							$jsonpopulation{$all1.'/'.$all1} = $snp_freqs{$pop}{$all1."/".$all1};
+							$jsonpopulation{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
+							$jsonpopulation{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
+					
+							push(@snp_pop_array,\%jsonpopulation);
 						}	
 					}
+					$jsonVariation{'population'} = \@snp_pop_array;
 				}
 			} else {
 				
