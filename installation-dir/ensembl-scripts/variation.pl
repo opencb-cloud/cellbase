@@ -138,6 +138,8 @@ my %jsonVariation = ();
 
 my %jsonphenannot = ();
 
+my %jsonxrefs = ();
+
 my %jsonpopulation = ();
 
 my %hstudy =(); 
@@ -319,7 +321,7 @@ foreach my $chrom_obj(@chroms) {
 				
 				print "\n"."SNP phenotype annotation is TRUE"."\n";
 				
-				my @snp_array;
+				my @snp_phenotype_array;
 				foreach my $var_annot(@var_annots) {
 					my $assoc_gene = $var_annot->associated_gene();
 					$assoc_gene =~ s/ //g;
@@ -339,22 +341,22 @@ foreach my $chrom_obj(@chroms) {
 						#$var_annot->study_url()."\t".
 						#$var_annot->study_description()."\n";
 						
-						$jsonphenannot{'sourceName'} = $var_annot->source_name();
-						$jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele()."\t".
-						$jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls()."\t".
-						$jsonphenannot{'pValue'} = $var_annot->p_value()."\t".
-						$jsonphenannot{'phenotypeName'} = $var_annot->phenotype_name()."\t".
-						$jsonphenannot{'phenotypeDescription'} = $var_annot->phenotype_description()."\t".
-						$jsonphenannot{'studyName'} = $var_annot->study_name()."\t".
-						$jsonphenannot{'studyType'} = $var_annot->study_type()."\t".
-						$jsonphenannot{'studyUrl'} = $var_annot->study_url()."\t".
-						$jsonphenannot{'studyDescription'} = $var_annot->study_description()."\n";
+						$jsonphenannot{'source'} = $var_annot->source_name();
+						$jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele();
+						$jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls();
+						$jsonphenannot{'pValue'} = $var_annot->p_value();
+						$jsonphenannot{'name'} = $var_annot->phenotype_name();
+						$jsonphenannot{'description'} = $var_annot->phenotype_description();
+						$jsonphenannot{'studyName'} = $var_annot->study_name();
+						$jsonphenannot{'studyType'} = $var_annot->study_type();
+						$jsonphenannot{'studyUrl'} = $var_annot->study_url();
+						$jsonphenannot{'studyDescription'} = $var_annot->study_description();
 						
-						push(@snp_array,\%jsonphenannot);									
+						push(@snp_phenotype_array,\%jsonphenannot);									
 					}
 					
 				}
-				$jsonVariation{'phenotype'} = \@snp_array;
+				$jsonVariation{'phenotype'} = \@snp_phenotype_array;
 			} else {
 				
 				print "\n"."SNP phenotype annotation is FALSE"."\n";
@@ -367,20 +369,21 @@ foreach my $chrom_obj(@chroms) {
 			if(@syn_sources > 0) {
 				
 				print "\n"."XRefs (Synonyms) is TRUE"."\n";
-				
+				my @snp_xref_array;
 				foreach my $syn_source(@syn_sources) {
 					@all_syns = @{$variation->get_all_synonyms($syn_source)};
 					foreach my $syn(@all_syns) {
 						$snp_xref_cont++;
 						#print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
 						
-						$jsonVariation{'xrefs'}->{'syn'} = $syn;
-						$jsonVariation{'xrefs'}->{'source'} = $syn_source;
+						$jsonxrefs{'id'} = $syn;
+						$jsonxrefs{'source'} = $syn_source;
 						
+						push(@snp_xref_array,\%jsonxrefs);   
 					}
 					#$jsonVariation{'xrefs'} = \@all_syns;
 				}
-				
+				$jsonVariation{'xrefs'} = \@snp_xref_array;
 			} else {
 				print "\n"."XRefs (Synonyms) is FALSE"."\n";
 			}
