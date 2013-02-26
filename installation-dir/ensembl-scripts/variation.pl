@@ -10,7 +10,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
-my $chrom = '22';
+my $chrom = '1';
 my $transcript_file = 'Homo sapiens';
 my $outdir = "/tmp/$species";
 my $verbose = '0';
@@ -131,25 +131,13 @@ my ($snp_slice_left, $snp_slice_right, $trans_stable_id, $trans);
 ##################### DECLARE VARIATION HASH ####################
 
 my %jsonStructural = ();
-
-my %jsonConsequence = ();
-
 my %jsonVariation = ();
 
-my %jsonpopulation = (); 
-
-my %jsonTranscript = ();
-
-my %jsonphenannot = ();
-
-my %jsonxrefs = ();
-
-my %jsonpopulation = ();
-
-my %hstudy =(); 
-
-my %hVariation = ();
-
+my @snp_phenotype_array = ();
+my @assoc_genes = ();
+my @snp_xref_array;
+my @snp_transcripts = ();
+my @snp_transcript_consequence_types = ();
 ######## END DECLARE VARIATION HASH #############################
 
 
@@ -161,17 +149,19 @@ my $chrom_snp_size_offset = 20000000;
 
 
 ## Opening files for writing
-open (SNP,">$outdir/snp.txt") || die "Cannot open $outdir file";
-open (SNP2TRANS,">$outdir/snp_to_transcript.txt") || die "Cannot open $outdir file";
-open (SNP2TRANS_CONSEQ_TYPE,">$outdir/snp_to_transcript_consequence_type.txt") || die "Cannot open $outdir file";
-open (SNP_POP_FREQ,">$outdir/snp_population_frequency.txt") || die "Cannot open $outdir file";
-open (SNP_PHEN_ANNOT,">$outdir/snp_phenotype_annotation.txt") || die "Cannot open $outdir file";
-open (SNP_XREF,">$outdir/snp_xref.txt") || die "Cannot open $outdir file";
+#open (SNP,">$outdir/snp.txt") || die "Cannot open $outdir file";
+#open (SNP2TRANS,">$outdir/snp_to_transcript.txt") || die "Cannot open $outdir file";
+#open (SNP2TRANS_CONSEQ_TYPE,">$outdir/snp_to_transcript_consequence_type.txt") || die "Cannot open $outdir file";
+#open (SNP_POP_FREQ,">$outdir/snp_population_frequency.txt") || die "Cannot open $outdir file";
+#open (SNP_PHEN_ANNOT,">$outdir/snp_phenotype_annotation.txt") || die "Cannot open $outdir file";
+#open (SNP_XREF,">$outdir/snp_xref.txt") || die "Cannot open $outdir file";
 open (STRUCT_VAR,">$outdir/structural_variation.txt") || die "Cannot open $outdir file";
 ## my JSON file
 open (CONSEQUENCE,">$outdir/consequence.json") || die "Cannot open $outdir file";
 open (STRUCTURAL,">$outdir/structural.json") || die "Cannot open $outdir file";
 open (VARIATION,">$outdir/variation.json") || die "Cannot open $outdir file";
+
+
 
 ## calculate CONSEQUENCE_TYPE
 open (CONSEQ_TYPE,">$outdir/consequence_type.txt") || die "Cannot open $outdir file";
@@ -274,12 +264,11 @@ foreach my $chrom_obj(@chroms) {
 		
 		foreach my $variation_feature(@snps) {
 
-			%jsonVariation = (); 
+			 
 #			print "Limpiando estructura \n";
 
-			$snp_cont++;
+#			$snp_cont++;
 			$variation = $variation_feature->variation();
-		
 		
 			##### SNP	####################################################
 			## fetching contigous sequences
@@ -308,21 +297,25 @@ foreach my $chrom_obj(@chroms) {
 			
 			
 			## this field allow us to discriminate between SNV and Structrural variants
-            $jsonStructural{'variationType'} = "SNV";
+            $jsonVariation{'variationType'} = "SNV";
 			
-#			my %hgvs_hash = %{$variation_feature->get_all_hgvs_notations()};
-#			my @hgvs_arr = ();
-#			foreach my $key(keys %hgvs_hash) {
-#				push(@hgvs_arr, \%hgvs_hash{$key});
-#			}
+			## converting HGVS to an array
+			my %hgvs_hash = %{$variation_feature->get_all_hgvs_notations()};
+			my @hgvs_arr = ();
+			foreach my $key(keys %hgvs_hash) {
+				my %hgvs = ();
+				$hgvs{$key} =  $hgvs_hash{$key};
+				push(@hgvs_arr, \%hgvs);
+			}
 			
 #			$jsonVariation{'variationType'} = "variation";
+            %jsonVariation = ();
 			$jsonVariation{'id'} = $variation_feature->variation_name();
 			$jsonVariation{'chromosome'} = $chrom->seq_region_name;
 			$jsonVariation{'start'} = $variation_feature->seq_region_start;
 			$jsonVariation{'end'} = $variation_feature->seq_region_end;
 			$jsonVariation{'strand'} = $variation_feature->strand;
-			$jsonVariation{'hgvs'} = $variation_feature->get_all_hgvs_notations();
+			$jsonVariation{'hgvs'} = \@hgvs_arr;
 			$jsonVariation{'mapWeight'} = $variation_feature->map_weight;
 			$jsonVariation{'alleleString'} = $variation_feature->allele_string;
 			$jsonVariation{'ancestralAllele'} = $variation->ancestral_allele;
@@ -332,30 +325,33 @@ foreach my $chrom_obj(@chroms) {
 			$jsonVariation{'displayEnsemblConsequenceType'} = $variation_feature->display_consequence();
 			$jsonVariation{'sequence'} = $snp_slice_left->seq."[".$variation_feature->allele_string."]".$snp_slice_right->seq;
 			
-			##### SNP phenotype annotation	####################################################
+			
+			
+			########################################################################
+			##### SNP phenotype annotation	########################################
 			@var_annots = @{$variation->get_all_VariationAnnotations()};
 			if(@var_annots > 0) {
 				
 #				print "\n"."SNP phenotype annotation is TRUE"."\n";
-				my @snp_phenotype_array = ();
+				@snp_phenotype_array = ();
 				foreach my $var_annot(@var_annots) {
 					my $assoc_gene = $var_annot->associated_gene();
 					$assoc_gene =~ s/ //g;
 					my @assoc_genes = split(",", $assoc_gene);
 					
-					my %jsonphenannot = ();
-                    $jsonphenannot{'source'} = $var_annot->source_name();
-                    $jsonphenannot{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele();
-                    $jsonphenannot{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls();
-                    $jsonphenannot{'pValue'} = $var_annot->p_value();
-                    $jsonphenannot{'name'} = $var_annot->phenotype_name();
-                    $jsonphenannot{'description'} = $var_annot->phenotype_description();
-                    $jsonphenannot{'study'}->{'name'} = $var_annot->study_name();
-                    $jsonphenannot{'study'}->{'type'} = $var_annot->study_type();
-                    $jsonphenannot{'study'}->{'url'} = $var_annot->study_url();
-                    $jsonphenannot{'study'}->{'description'} = $var_annot->study_description();
+					my %annotated_json = ();
+                    $annotated_json{'source'} = $var_annot->source_name();
+                    $annotated_json{'associatedVariantRiskAllele'} = $var_annot->associated_variant_risk_allele();
+                    $annotated_json{'riskAlleleFreqInControls'} = $var_annot->risk_allele_freq_in_controls();
+                    $annotated_json{'pValue'} = $var_annot->p_value();
+                    $annotated_json{'name'} = $var_annot->phenotype_name();
+                    $annotated_json{'description'} = $var_annot->phenotype_description();
+                    $annotated_json{'study'}->{'name'} = $var_annot->study_name();
+                    $annotated_json{'study'}->{'type'} = $var_annot->study_type();
+                    $annotated_json{'study'}->{'url'} = $var_annot->study_url();
+                    $annotated_json{'study'}->{'description'} = $var_annot->study_description();
 
-                    my @assoc_genes = ();                        
+                    @assoc_genes = ();                        
 					foreach $assoc_gene(@assoc_genes) {
 #						$snp_phen_annot_cont++;
 						#print SNP_PHEN_ANNOT "$snp_phen_annot_cont\t$snp_cont\t".
@@ -371,41 +367,44 @@ foreach my $chrom_obj(@chroms) {
 						#$var_annot->study_description()."\n";
 						push(@assoc_genes, $assoc_gene);
 					}
-					$jsonphenannot{'associatedGenes'} = \@assoc_genes;
+					$annotated_json{'associatedGenes'} = \@assoc_genes;
 					
-					push(@snp_phenotype_array, \%jsonphenannot);									
+					push(@snp_phenotype_array, \%annotated_json);									
 				}
-				$jsonVariation{'phenotype'} = \@snp_phenotype_array;
+#				$jsonVariation{'phenotype'} = \@snp_phenotype_array;
 			} else {
 #				print "\n"."SNP phenotype annotation is FALSE"."\n";			
 			}
-			
+			$jsonVariation{'phenotypes'} = \@snp_phenotype_array;
 		
+		    ########################################################################
 			##### XRefs (Synonyms)	####################################################
 			@syn_sources = @{$variation->get_all_synonym_sources()};
 			if(@syn_sources > 0) {
 				
 #				print "\n"."XRefs (Synonyms) is TRUE"."\n";				
-				my @snp_xref_array;
+				@snp_xref_array = ();
 				foreach my $syn_source(@syn_sources) {
 					@all_syns = @{$variation->get_all_synonyms($syn_source)};
 					foreach my $syn(@all_syns) {
 						$snp_xref_cont++;
 						#print SNP_XREF "$snp_xref_cont\t$snp_cont\t$syn\t$syn_source\n";
 
-						my %jsonxrefs = ();
-						$jsonxrefs{'id'} = $syn;
-                        $jsonxrefs{'source'} = $syn_source;
+						my %xrefs_json = ();
+						$xrefs_json{'id'} = $syn;
+                        $xrefs_json{'source'} = $syn_source;
                         
-						push(@snp_xref_array, \%jsonxrefs);   
+						push(@snp_xref_array, \%xrefs_json);   
 					}
 				}
-				$jsonVariation{'xrefs'} = \@snp_xref_array;
+#				$jsonVariation{'xrefs'} = \@snp_xref_array;
 			} else {
 #				print "\n"."XRefs (Synonyms) is FALSE"."\n";
 			}
+		      $jsonVariation{'xrefs'} = \@snp_xref_array;
 		
 		
+		    ########################################################################
 			##### Population	####################################################
 			%snp_freqs = {};
 			
@@ -449,9 +448,9 @@ foreach my $chrom_obj(@chroms) {
 						$snp_freqs{$pop}{$all2."/".$all2} = 0 if ($snp_freqs{$pop}{$all2."/".$all2} eq '');
 						
 						if($snp_freqs{$pop}{$all1} != 0 || $snp_freqs{$pop}{$all2} != 0) {
+#							$snp_pop_gen_cont++;
 							my ($pop_source, $pop_code) = split(":", $pop);
 							$pop_code =~ s/HapMap-//i;
-							$snp_pop_gen_cont++;
 							
 							#print SNP_POP_FREQ "$snp_pop_gen_cont\t$snp_cont\t$pop_code\t$pop_source\t";
 							
@@ -461,110 +460,191 @@ foreach my $chrom_obj(@chroms) {
 							#"\t$all1/$all1\t".$snp_freqs{$pop}{$all1."/".$all1}.
 							#"\t$all1/$all2\t".$snp_freqs{$pop}{$all1."/".$all2}.
 							#"\t$all2/$all2\t".$snp_freqs{$pop}{$all2."/".$all2}."\n";
-							my %jsonpopulation = ();
-							$jsonpopulation{'code'} = $pop_code;
-							$jsonpopulation{'source'} = $pop_source;
-							$jsonpopulation{$all1} = $snp_freqs{$pop}{$all1};
-							$jsonpopulation{$all2} = $snp_freqs{$pop}{$all2};
-							$jsonpopulation{$all1.'/'.$all1} = $snp_freqs{$pop}{$all1."/".$all1};
-							$jsonpopulation{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
-							$jsonpopulation{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
+							my %population_json = ();
+							$population_json{'code'} = $pop_code;
+							$population_json{'source'} = $pop_source;
+							$population_json{$all1} = $snp_freqs{$pop}{$all1};
+							$population_json{$all2} = $snp_freqs{$pop}{$all2};
+							$population_json{$all1.'/'.$all1} = $snp_freqs{$pop}{$all1."/".$all1};
+							$population_json{$all1.'/'.$all2} = $snp_freqs{$pop}{$all1."/".$all2};
+							$population_json{$all2.'/'.$all2} = $snp_freqs{$pop}{$all2."/".$all2};
 					
-							push(@snp_pop_array, \%jsonpopulation);
+							push(@snp_pop_array, \%population_json);
 						}	
 					}
-					$jsonVariation{'population_frequencies'} = \@snp_pop_array;
+#					$jsonVariation{'population_frequency'} = \@snp_pop_array;
 				}
 			} else {
 #				print "\n"."Population is FALSE"."\n";
 			}
+		      $jsonVariation{'populationFrequencies'} = \@snp_pop_array;
 		
 		
+		    ########################################################################
+            ##### SNP population genotype ##########################################
+            my %pop_genotype_json = ();
+            my @pop_genotype_array = ();
+            if(@{$variation_feature->get_all_PopulationGenotypes} > 0) {
+                  foreach my $pop_genotype(@{$variation_feature->get_all_PopulationGenotypes}) {
+#                     print $pop_genotype->allele()."\t".$pop_genotype->count()."\t".$pop_genotype->population()->name."\t".$pop_genotype->genotype_string()."\n";
+                      my %pop_genotype_json = ();
+                      $pop_genotype_json{'alele'} = $pop_genotype->allele();
+                      $pop_genotype_json{'count'} = $pop_genotype->count();
+                      $pop_genotype_json{'frequency'} = $pop_genotype->frequency();
+                      $pop_genotype_json{'populationName'} = $pop_genotype->population()->name();
+                      $pop_genotype_json{'populationDescription'} = $pop_genotype->population()->description();
+                      $pop_genotype_json{'populationSize'} = $pop_genotype->population()->size();
+                      $pop_genotype_json{'genotype'} = $pop_genotype->genotype_string();
+                      $pop_genotype_json{'subsnp'} = $pop_genotype->subsnp();
+                      
+                      my @pop_individual_array = ();
+                      my @pop_individual_children_array = ();
+                      my %individual_hash = ();
+                      foreach my $ind(@{$pop_genotype->population()->get_all_Individuals()}) {
+                          my %individual_hash = ();
+                          $individual_hash{'name'} = $ind->name;
+                          $individual_hash{'display'} = $ind->display;
+                          $individual_hash{'gender'} = $ind->gender();
+                          if(defined $ind->father_Individual()) {
+                              $individual_hash{'father'} = $ind->father_Individual()->name();
+                          }else {
+                              $individual_hash{'father'} = '';
+                          }
+                          if(defined $ind->mother_Individual()) {
+                              $individual_hash{'mother'} = $ind->mother_Individual()->name();
+                          }else {
+                              $individual_hash{'mother'} = '';
+                          }
+                          
+                          @pop_individual_children_array = ();
+                          if(defined $ind->get_all_child_Individuals()) {
+                              for(@{$ind->get_all_child_Individuals()}) {
+                                 push(@pop_individual_children_array, $_->name);
+                              }     
+                          }
+                          $individual_hash{'children'} = \@pop_individual_children_array;
+                          
+                          $individual_hash{'description'} = $ind->description();
+                          
+                          push(@pop_individual_array, \%individual_hash);
+                      }
+                      $pop_genotype_json{'individuals'} = \@pop_individual_array;
+                      
+                      push(@pop_genotype_array, \%pop_genotype_json);
+                  }
+            }
+           $jsonVariation{'populationGenotypes'} = \@pop_genotype_array;
+            
+            ################################################################################
 			##### TranscriptVariations	####################################################
 			@trans_snps = @{$variation_feature->get_all_TranscriptVariations()};
+			my @snp_transcripts = ();
 			foreach my $trans_snp(@trans_snps) {
 				my @snp_consequence_array;
 				$snp_to_trans_cont++;
 				$trans_stable_id = $trans_snp->transcript()->stable_id();
 				$trans = $trans_snp->transcript();
 					
-				$cdna_start = $trans_snp->cdna_start() || -1;
-				$cdna_end = $trans_snp->cdna_end() || -1;
-				$translation_start = $trans_snp->translation_start() || -1;
-				$translation_end = $trans_snp->translation_end() || -1;
-				$cds_start = $trans_snp->cds_start() || -1;
-				$cds_end = $trans_snp->cds_end() || -1;
-				$pep_allele_string = $trans_snp->pep_allele_string() || "-";
+#				$cdna_start = $trans_snp->cdna_start() || -1;
+#				$cdna_end = $trans_snp->cdna_end() || -1;
+#				$translation_start = $trans_snp->translation_start() || -1;
+#				$translation_end = $trans_snp->translation_end() || -1;
+#				$cds_start = $trans_snp->cds_start() || -1;
+#				$cds_end = $trans_snp->cds_end() || -1;
+#				$pep_allele_string = $trans_snp->pep_allele_string() || "-";
 		
- 				
- 				$reference_codon = "";
-				$codon = "";
- 				$allele_pep_allele_string = "";
- 				$polyphen_pred = "";
- 				$polyphen_score = "";
- 				$sift_pred = "";
- 				$sift_score = "";
+# 				$reference_codon = "";
+#                $codon = "";
+#                $allele_pep_allele_string = "";
+#                $polyphen_pred = "";
+#                $polyphen_score = "";
+#                $sift_pred = "";
+#                $sift_score = "";
+                
+                my %json_transcript = ();
+                $json_transcript{'transcriptId'} = $trans_snp->transcript()->stable_id();
+                $json_transcript{'geneId'} = $trans_snp->transcript()->get_Gene()->stable_id();
+                $json_transcript{'geneName'} = $trans_snp->transcript()->get_Gene()->external_name();
+                
+                $json_transcript{'cdnaStart'} = $trans_snp->cdna_start() || -1;
+                $json_transcript{'cdnaEnd'} = $trans_snp->cdna_end() || -1;
+                $json_transcript{'cdsStart'} = $trans_snp->cds_start() || -1;
+                $json_transcript{'cdsEnd'} = $trans_snp->cds_end() || -1;
+                $json_transcript{'translationStart'} = $trans_snp->translation_start() || -1;
+                $json_transcript{'translationEnd'} = $trans_snp->translation_end() || -1;
+                $json_transcript{'peptideAlleleString'} = $trans_snp->pep_allele_string() || "-";
+                
+                $json_transcript{'referenceCodon'} = "";
+                $json_transcript{'codon'} = "";
+                $json_transcript{'alternativePeptideAlleleString'} = "";
+                $json_transcript{'polyphenPrediction'} = "";
+                $json_transcript{'polyphenScore'} = "";
+                $json_transcript{'siftPrediction'} = "";
+                $json_transcript{'siftScore'} = "";
+                
  				if($species eq 'Homo sapiens') {
  					@trans_var_alleles = @{$trans_snp->get_all_TranscriptVariationAlleles()};
  					if(@trans_var_alleles > 0) {
  						foreach my $trans_anp_allele(@trans_var_alleles) {
 # 							$reference_codon = $trans_anp_allele->transcript_variation->get_reference_TranscriptVariationAllele->codon;
 							if($trans_anp_allele->polyphen_prediction ne '' || $trans_anp_allele->sift_prediction ne '') {
-								$reference_codon = $trans_anp_allele->transcript_variation->get_reference_TranscriptVariationAllele->codon;
-								$codon = $trans_anp_allele->codon;
-								$allele_pep_allele_string = $trans_anp_allele->pep_allele_string;
- 								$polyphen_pred = $trans_anp_allele->polyphen_prediction;
- 								$polyphen_score = $trans_anp_allele->polyphen_score;
- 								$sift_pred = $trans_anp_allele->sift_prediction;
- 								$sift_score = $trans_anp_allele->sift_score;
+#								$reference_codon = $trans_anp_allele->transcript_variation->get_reference_TranscriptVariationAllele->codon;
+#								$codon = $trans_anp_allele->codon;
+#								$allele_pep_allele_string = $trans_anp_allele->pep_allele_string;
+# 								$polyphen_pred = $trans_anp_allele->polyphen_prediction;
+# 								$polyphen_score = $trans_anp_allele->polyphen_score;
+# 								$sift_pred = $trans_anp_allele->sift_prediction;
+# 								$sift_score = $trans_anp_allele->sift_score;
+ 								
+ 								$json_transcript{'referenceCodon'} = $trans_anp_allele->transcript_variation->get_reference_TranscriptVariationAllele->codon;
+                                $json_transcript{'codon'} = $trans_anp_allele->codon;
+                                $json_transcript{'alternativePeptideAlleleString'} = $trans_anp_allele->pep_allele_string;
+                                $json_transcript{'polyphenPrediction'} = $trans_anp_allele->polyphen_prediction;
+                                $json_transcript{'polyphenScore'} = $trans_anp_allele->polyphen_score;
+                                $json_transcript{'siftPrediction'} = $trans_anp_allele->sift_prediction;
+                                $json_transcript{'siftScore'} = $trans_anp_allele->sift_score;
 # 								print $variation_feature->variation_name()."\t$trans_stable_id\t".$reference_codon."\t".$pep_allele_string."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
 							}
 						}
  					}	
  				}
 
-				#print SNP2TRANS $snp_to_trans_cont."\t".$snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
+#               print SNP2TRANS $snp_to_trans_cont."\t".$snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
+#				$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
 				
-				print 
-				"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
-				"trans_stable_id: ". $trans_stable_id."\n".
-				"snp_cont: ".$snp_cont."\n".
-				"ids_to_pk{trans_stable_id}".$ids_to_pk{$trans_stable_id}."\n".
-				"consequence_type_ids{trans_snp->most_severe_OverlapConsequence()->SO_term}".$consequence_type_ids{$trans_snp->most_severe_OverlapConsequence()->SO_term}."\n".
-				"cdna_start".$cdna_start."\n".
-				"cdna_end".$cdna_end."\n".
-				"translation_start".$translation_start."\n".
-				"translation_end".$translation_end."\n".
-				"cds_start".$cds_start."\n".
-				"cds_end".$cds_end."\n".
-				
-				$jsonTranscript{'id'} = $trans_stable_id;
-				
-				
-				
-				$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
+				@snp_transcript_consequence_types = ();
 				foreach(@{$trans_snp->consequence_type('SO')}) {
 #					print SNP2TRANS $snp_cont."\t".$ids_to_pk{$trans_stable_id}."\t".$consequence_type_ids{$_}."\t".$cdna_start."\t".$cdna_end."\t".$translation_start."\t".$translation_end."\t".$cds_start."\t".$cds_end."\t".
 #					$pep_allele_string."\t".$reference_codon."\t".$codon."\t".$allele_pep_allele_string."\t".$polyphen_pred."\t".$polyphen_score."\t".$sift_pred."\t".$sift_score."\n";
-					$snp_to_trans_cont_consq_type_cont++;
+#					$snp_to_trans_cont_consq_type_cont++;
 					#print SNP2TRANS_CONSEQ_TYPE $snp_to_trans_cont_consq_type_cont."\t".$snp_to_trans_cont."\t".$consequence_type_ids{$_}."\n";
 					
-					print "************************************************************\n".
-					"snp_to_trans_cont_consq_type_cont: ".$snp_to_trans_cont_consq_type_cont."\n".
-					"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
-					"consequence_type_ids{$_}: ".$consequence_type_ids{$_}."\n".
-					"************************************************************\n";
+#					print "************************************************************\n".
+#					"snp_to_trans_cont_consq_type_cont: ".$snp_to_trans_cont_consq_type_cont."\n".
+#					"snp_to_trans_cont: ".$snp_to_trans_cont."\n".
+#					"consequence_type_ids{$_}: ".$consequence_type_ids{$_}."\n".
+#					"consequence_type_ids{$_}: ".$_."\n".
+#					"************************************************************\n";
 					
+#					push(@snp_transcript_consequence_types, $_);
 				}
+				$json_transcript{'consequenceTypes'} = $trans_snp->consequence_type('SO');
+				
+				## Save transcript info from the SNP into array
+				push(@snp_transcripts, \%json_transcript);
 			}
+			
+			## adding all transcript info from SNP into SNP object
+			$jsonVariation{'transcripts'} = \@snp_transcripts;
+			
 			
 #			my $json2 = encode_json \%jsonStructural;
 #			print "---STRUCTURAL---> \n";
 #			print $json2."\n";
 
 			my $json = encode_json \%jsonVariation;
-			print "---VARIATION---> \n";
-			print $json."\n";
+#			print "---VARIATION---> \n";
+			print VARIATION $json."\n";
 			
 			# borro la direccion de mem. El array de ensembl se acumula y revienta la ram
 			undef (@trans_snps);
@@ -591,13 +671,14 @@ foreach my $chrom_obj(@chroms) {
 
 
 }
-close(SNP);
-close(SNP2TRANS);
-close(SNP2TRANS_CONSEQ_TYPE);
-close(SNP_POP_FREQ);
-close(SNP_PHEN_ANNOT);
-close(SNP_XREF);
+#close(SNP);
+#close(SNP2TRANS);
+#close(SNP2TRANS_CONSEQ_TYPE);
+#close(SNP_POP_FREQ);
+#close(SNP_PHEN_ANNOT);
+#close(SNP_XREF);
 close(STRUCT_VAR);
+close(VARIATION);
 
 #sub get_consequence_type_id {
 #	my $cons = shift;
