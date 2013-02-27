@@ -371,30 +371,31 @@ public class GeneParser {
 				e.setGenomicCodingEnd(end);
 				
 
-				// just in case...
-				if(t.getExons() == null) {
-					t.setExons(new ArrayList<Exon>());
-				}
+//				// just in case...
+//				if(t.getExons() == null) {
+//					t.setExons(new ArrayList<Exon>());
+//				}
+//				
+//				// before adding
+//				if(t.getExons().size() > 0) {
+//					if(strand.equals("1") || strand.equals("+")) {
+//						Exon lastExon = t.getExons().get(t.getExons().size()-1);
+//						if(lastExon.getEnd() == e.getStart()-1) {
+//							lastExon.setEnd(e.getEnd());
+//							lastExon.setId(e.getId());
+//							lastExon.setGenomicCodingStart(e.getStart());
+//							lastExon.setGenomicCodingEnd(e.getEnd());
+//						}else {
+//							t.getExons().add(e);
+//						}
+//					}else {	// negative strand
+//						
+//					}
+//				}else {
+//					t.getExons().add(e);					
+//				}
 				
-				// before adding
-				if(t.getExons().size() > 0) {
-					if(strand.equals("1") || strand.equals("+")) {
-						Exon lastExon = t.getExons().get(t.getExons().size()-1);
-						if(lastExon.getEnd() == e.getStart()-1) {
-							lastExon.setEnd(e.getEnd());
-							lastExon.setId(e.getId());
-							lastExon.setGenomicCodingStart(e.getStart());
-							lastExon.setGenomicCodingEnd(e.getEnd());
-						}else {
-							t.getExons().add(e);
-						}
-					}else {	// negative strand
-						
-					}
-				}else {
-					t.getExons().add(e);					
-				}
-				
+				t.getExons().add(e);					
 				
 				
 //				Collections.sort(list, new FeatureComparable());
@@ -407,7 +408,7 @@ public class GeneParser {
 //				FivePrimeUtr fivePrimeUtr = new FivePrimeUtr(id, chromosome, start, end, strand);
 //				t.getFivePrimeUtr().add(fivePrimeUtr);
 				parent = attributes.get("parent");
-				int phase = Integer.parseInt(fields[7]);
+//				int phase = Integer.parseInt(fields[7]);
 				Transcript t = transcripts.get(parent);
 
 				Exon e = new Exon();
@@ -416,7 +417,7 @@ public class GeneParser {
 				e.setStart(start);
 				e.setEnd(end);
 				e.setStrand(strand);
-				e.setPhase(phase);
+//				e.setPhase(phase);
 				
 				e.setGenomicCodingStart(start);
 				e.setGenomicCodingEnd(end);
@@ -465,10 +466,52 @@ public class GeneParser {
 
 		}
 		br.close();
+		
+		//Reorder
+		for (String geneId: genes.keySet()) {
+			Gene gene = genes.get(geneId);
+			for (Transcript transcript: gene.getTranscripts()){
+				Collections.sort(transcript.getExons(), new FeatureComparable());
+				
+				Exon prevExon = null;
+				for (Exon exon : transcript.getExons()) {
+					if(prevExon != null){
+						
+						String strand = exon.getStrand();
+						if(strand.equals("1") || strand.equals("+")) {
+							
+							if(prevExon.getEnd() == exon.getStart()-1) {
+								if(prevExon.getId().contains("five_prime_UTR")){
+									exon.setStart(prevExon.getStart());
+								}
+								if(exon.getId().contains("three_prime_UTR")){
+									prevExon.setEnd(exon.getEnd());
+								}
+							}
+							
+						}else{	// negative strand
+							
+							if(prevExon.getEnd() == exon.getStart()-1) {
+								if(prevExon.getId().contains("three_prime_UTR")){
+									exon.setStart(prevExon.getStart());
+								}
+								if(exon.getId().contains("five_prime_UTR")){
+									prevExon.setEnd(exon.getEnd());
+								}
+							}
+						}
+					}
+					
+					
+					prevExon = exon;
+				}
+				//TODO 
+			}
+		}
 
 		Gson gson = new Gson();
 		System.out.println("");
-		System.out.println(gson.toJson(genes.get("Ciclev10007219m.g")));
+		System.out.println(gson.toJson(genes.get("Ciclev10007224m.g")));
 		System.out.println("END LOAD");
 
 		// Map<String, Transcript> transcriptsId = new HashMap<String,
@@ -478,12 +521,7 @@ public class GeneParser {
 	private class FeatureComparable implements Comparator<Object> {
 		@Override
 		public int compare(Object exon1, Object exon2) {
-			if (exon1 instanceof Exon && exon2 instanceof Exon) {
-				if (((Exon) exon1).getStart() > ((Exon) exon2).getStart())
-					return 1;
-				return 0;
-			} else
-				return Integer.MIN_VALUE;
+			return ((Exon) exon1).getStart() - ((Exon) exon2).getStart();
 		}
 	}
 }
