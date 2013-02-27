@@ -50,6 +50,10 @@ public class CellBaseMain {
 //		if(commandLine.hasOption("report")) {
 //			this.report = commandLine.getOptionValue("report", "pdf");
 //		}
+		
+		if(args.length > 0 && "variation".equals(args[1])) {
+			System.out.println("variation SQL test");
+		}
 	}
 	
 }
