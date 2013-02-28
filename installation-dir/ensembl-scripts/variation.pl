@@ -10,7 +10,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
-my $chrom = '1';
+my $chrom = '22';
 my $transcript_file = 'Homo sapiens';
 my $outdir = "/tmp/$species";
 my $verbose = '0';
