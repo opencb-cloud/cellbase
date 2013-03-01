@@ -1,6 +1,6 @@
 target*
 .classpath
-.project 
 .settings/*
 installation-dir/libs/*
 .pydevproject
+.project
