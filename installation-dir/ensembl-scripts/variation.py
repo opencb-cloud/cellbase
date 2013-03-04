@@ -65,24 +65,31 @@ for chromosomeNumber in chromosome:
 		chromClause = "'" + chromosomeNumber + "'"
 		outDir = outDirectory + "/chromosome_" + str(chromosomeNumber)
 
-		print(mysql + select_variation + chromClause + "\" > " + outDir + "/select_variation.txt");
-		os.system(mysql + select_variation + chromClause + "\" > " + outDir + "/select_variation.txt");
+		print(mysql + select_variation + chromClause + "\" > " + outDir + "/variation.txt");
+		os.system(mysql + select_variation + chromClause + "\" > " + outDir + "/variation.txt");
+		os.system("gzip "+ outDir + "/variation.txt");
 	
-		print(mysql + select_transcript_variation + chromClause + "\" > " + outDir + "/select_transcript_variation.txt");
-		os.system(mysql + select_transcript_variation + chromClause + "\" > " + outDir + "/select_transcript_variation.txt");
+		print(mysql + select_transcript_variation + chromClause + "\" > " + outDir + "/transcript_variation.txt");
+		os.system(mysql + select_transcript_variation + chromClause + "\" > " + outDir + "/transcript_variation.txt");
+		os.system("gzip "+ outDir + "/transcript_variation.txt");
 			
-		print(mysql + select_phenotype + chromClause + "\" > " + outDir + "/select_phenotype.txt");
-		os.system(mysql + select_phenotype + chromClause + "\" > " + outDir + "/select_phenotype.txt");
+		print(mysql + select_phenotype + chromClause + "\" > " + outDir + "/phenotype.txt");
+		os.system(mysql + select_phenotype + chromClause + "\" > " + outDir + "/phenotype.txt");
+		os.system("gzip "+ outDir + "/phenotype.txt");
 			
-		print(mysql + select_xref + chromClause + "\" > " + outDir + "/select_xref.txt");
-		os.system(mysql + select_xref + chromClause + "\" > " + outDir + "/select_xref.txt");
+		print(mysql + select_xref + chromClause + "\" > " + outDir + "/xrefs.txt");
+		os.system(mysql + select_xref + chromClause + "\" > " + outDir + "/xrefs.txt");
+		os.system("gzip "+ outDir + "/xrefs.txt");
 			
-		print(mysql + select_regulatory + chromClause + "\" > " + outDir + "/select_regulatory.txt");
-		os.system(mysql + select_regulatory + chromClause + "\" > " + outDir + "/select_regulatory.txt");
+		print(mysql + select_regulatory + chromClause + "\" > " + outDir + "/regulatory.txt");
+		os.system(mysql + select_regulatory + chromClause + "\" > " + outDir + "/regulatory.txt");
+		os.system("gzip "+ outDir + "/regulatory.txt");
 			
-		print(mysql + select_frequency_allele + chromClause + "\" > " + outDir + "/select_frequency_allele.txt");
-		os.system(mysql + select_frequency_allele + chromClause + "\" > " + outDir + "/select_frequency_allele.txt");
+		print(mysql + select_frequency_allele + chromClause + "\" > " + outDir + "/frequency_allele.txt");
+		os.system(mysql + select_frequency_allele + chromClause + "\" > " + outDir + "/frequency_allele.txt");
+		os.system("gzip "+ outDir + "/frequency_allele.txt");
 			
-		print(mysql + select_frequency_genotype + chromClause + "\" > " + outDir + "/select_frequency_genotype.txt");
-		os.system(mysql + select_frequency_genotype + chromClause + "\" > " + outDir + "/select_frequency_genotype.txt");
+		print(mysql + select_frequency_genotype + chromClause + "\" > " + outDir + "/frequency_genotype.txt");
+		os.system(mysql + select_frequency_genotype + chromClause + "\" > " + outDir + "/frequency_genotype.txt");
+		os.system("gzip "+ outDir + "/frequency_genotype.txt");
 
