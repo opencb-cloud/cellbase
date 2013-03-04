@@ -69,30 +69,30 @@ for chromosomeNumber in chromosome:
 		outDir = outDirectory + "/chromosome_" + str(chromosomeNumber)
 		
 		if verbose:
-			print(mysql_command_line + select_variation + chromClause + "\" > " + outDir + "/select_variation.txt");
-		os.system(mysql_command_line + select_variation + chromClause + "\" > " + outDir + "/select_variation.txt");
+			print(mysql_command_line + select_variation + chromClause + "\" | gzip > " + outDir + "/select_variation.txt");
+		os.system(mysql_command_line + select_variation + chromClause + "\" | gzip > " + outDir + "/select_variation.txt");
 		
 		if verbose:
-			print(mysql_command_line + select_transcript_variation + chromClause + "\" > " + outDir + "/select_transcript_variation.txt");
-		os.system(mysql_command_line + select_transcript_variation + chromClause + "\" > " + outDir + "/select_transcript_variation.txt");
+			print(mysql_command_line + select_transcript_variation + chromClause + "\" | gzip > " + outDir + "/select_transcript_variation.txt");
+		os.system(mysql_command_line + select_transcript_variation + chromClause + "\" | gzip > " + outDir + "/select_transcript_variation.txt");
 		
 		if verbose:	
-			print(mysql_command_line + select_phenotype + chromClause + "\" > " + outDir + "/select_phenotype.txt");
-		os.system(mysql_command_line + select_phenotype + chromClause + "\" > " + outDir + "/select_phenotype.txt");
+			print(mysql_command_line + select_phenotype + chromClause + "\" | gzip > " + outDir + "/select_phenotype.txt");
+		os.system(mysql_command_line + select_phenotype + chromClause + "\" | gzip > " + outDir + "/select_phenotype.txt");
 		
 		if verbose:
-			print(mysql_command_line + select_xref + chromClause + "\" > " + outDir + "/select_xref.txt");
-		os.system(mysql_command_line + select_xref + chromClause + "\" > " + outDir + "/select_xref.txt");
+			print(mysql_command_line + select_xref + chromClause + "\" | gzip > " + outDir + "/select_xref.txt");
+		os.system(mysql_command_line + select_xref + chromClause + "\" | gzip > " + outDir + "/select_xref.txt");
 		
 		if verbose:
-			print(mysql_command_line + select_regulatory + chromClause + "\" > " + outDir + "/select_regulatory.txt");
-		os.system(mysql_command_line + select_regulatory + chromClause + "\" > " + outDir + "/select_regulatory.txt");
+			print(mysql_command_line + select_regulatory + chromClause + "\" | gzip > " + outDir + "/select_regulatory.txt");
+		os.system(mysql_command_line + select_regulatory + chromClause + "\" | gzip > " + outDir + "/select_regulatory.txt");
 		
 		if verbose:
-			print(mysql_command_line + select_frequency_allele + chromClause + "\" > " + outDir + "/select_frequency_allele.txt");
-		os.system(mysql_command_line + select_frequency_allele + chromClause + "\" > " + outDir + "/select_frequency_allele.txt");
+			print(mysql_command_line + select_frequency_allele + chromClause + "\" | gzip > " + outDir + "/select_frequency_allele.txt");
+		os.system(mysql_command_line + select_frequency_allele + chromClause + "\" | gzip > " + outDir + "/select_frequency_allele.txt");
 		
 		if verbose:
-			print(mysql_command_line + select_frequency_genotype + chromClause + "\" > " + outDir + "/select_frequency_genotype.txt");
-		os.system(mysql_command_line + select_frequency_genotype + chromClause + "\" > " + outDir + "/select_frequency_genotype.txt");
+			print(mysql_command_line + select_frequency_genotype + chromClause + "\" | gzip > " + outDir + "/select_frequency_genotype.txt");
+		os.system(mysql_command_line + select_frequency_genotype + chromClause + "\" | gzip > " + outDir + "/select_frequency_genotype.txt");
 
