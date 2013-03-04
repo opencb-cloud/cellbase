@@ -57,11 +57,11 @@ public class VariationParser {
 					for (String string : attributesData) {
 						if (string.contains("Variant_seq")) {
 							variantSeq = string.split("=")[1].split(",");
-							break;// Testear este break;
+							break;// Test this break
 						}
 
 					}
-					// System.out.println(attributesData[1].split("=")[1].split(",").length);
+
 					for (int i = 0; i < numberVariantSeq; i++) {
 						variation[i] = new Variation();
 						variation[i].setChromosome(data[0]);
@@ -79,12 +79,8 @@ public class VariationParser {
 								variation[i].setAlternate(aux[1].split(",")[i]);
 								break;
 							case "variant_effect":
-								// System.out.println(aux[1]);
 								String[] variantEffect = aux[1].split(" ");
-								// System.out.println("sadadasdadas ->>>"
-								// +Integer.parseInt(variantEffect[1]));
-								// System.out.println("la i vale... >>>>>>" +
-								// i);
+
 								if (Integer.parseInt(variantEffect[1]) == i) {
 									switch (variantSeq[Integer
 											.parseInt(variantEffect[1])]) {
@@ -136,7 +132,6 @@ public class VariationParser {
 
 					}
 					for (Variation var : variation) {
-						// container.add(var);
 						bw.write(gson.toJson(var) + "\n");
 					}
 				}
@@ -177,7 +172,6 @@ public class VariationParser {
 			br1.close();
 			System.out.println(chromosomes);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return (String[]) chromosomes.toArray();
