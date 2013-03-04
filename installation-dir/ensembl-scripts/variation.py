@@ -9,12 +9,17 @@ def executedSortedGziped(filename,query):
 	os.system(mysql_command_line + query + chromClause + "\" > " + outDir + filename);	
 	
 	if verbose:
-		print("sort -k1,1 " + outDir + filename + " > " + outDir + filename);
-	os.system("sort -k1,1 " + outDir + filename + " > " + outDir + filename);
+		print("sort -k1,1 " + outDir + filename + " > " + outDir + filename+".sort");
+	os.system("sort -k1,1 " + outDir + filename + " > " + outDir + filename+".sort");
 
 	if verbose:
-		print("gzip " + outDir + filename);
-	os.system("gzip " + outDir + filename);
+		print("gzip " + outDir + filename+".sort");
+	os.system("gzip " + outDir + filename+".sort");
+
+	if verbose:
+		print("rm " + outDir + filename);
+	os.system("rm " + outDir + filename);
+	
 	
 hsapiensChromosomes=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y', 'MT'];
 
