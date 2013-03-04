@@ -70,7 +70,7 @@ for chromosomeNumber in chromosome:
 		
 		if verbose:
 			print(mysql_command_line + variation + chromClause + "\" | gzip > " + outDir + "/variation.txt");
-		os.system(mysql_command_line + select_variation + chromClause + "\" | gzip > " + outDir + "/variation.txt");
+		os.system(mysql_command_line + variation + chromClause + "\" | gzip > " + outDir + "/variation.txt");
 		
 		if verbose:
 			print(mysql_command_line + transcript_variation + chromClause + "\" | gzip > " + outDir + "/transcript_variation.txt");
