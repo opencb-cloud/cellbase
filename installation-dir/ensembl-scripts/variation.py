@@ -3,6 +3,19 @@
 import os
 import argparse
 
+def executedSortedGziped(filename,query):
+	if verbose:
+		print(mysql_command_line + query + chromClause + "\" > " + outDir + filename);
+	os.system(mysql_command_line + query + chromClause + "\" > " + outDir + filename);	
+	
+	if verbose:
+		print("sort -k1,1 " + outDir + filename + " > " + outDir + filename);
+	os.system("sort -k1,1 " + outDir + filename + " > " + outDir + filename);
+
+	if verbose:
+		print("gzip " + outDir + filename);
+	os.system("gzip " + outDir + filename);
+	
 hsapiensChromosomes=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y', 'MT'];
 
 parser = argparse.ArgumentParser(prog="variation");
@@ -16,7 +29,6 @@ parser.add_argument("-p", "--password", action="store", dest="password", help="p
 parser.add_argument("-P", "--port", action="store", dest="port", help="port of database");
 parser.add_argument("--ip", action="store", dest="ip", help="ip of database");
 
-
 parser.set_defaults(chromosome=hsapiensChromosomes);
 parser.set_defaults(verbose = False);
 parser.set_defaults(host="localhost");
@@ -28,6 +40,7 @@ parser.set_defaults(port="3306");
 parser.set_defaults(ip="127.0.0.1");
 
 args = parser.parse_args();
+
 
 outDirectory = args.outDirectory;
 verbose = args.verbose;
@@ -59,40 +72,18 @@ frequency_genotype = "select v.name, ac1.allele as allele1, ac2.allele as allele
 
 select_test = "select * from table where id=";
 
+outputfile_array = ['variation.txt','transcript_variation.txt','phenotype.txt','xref.txt','regulatory.txt','frequency_allele.txt','frequency_genotype.txt'];
+query_array = [variation,transcript_variation,phenotype,xref,regulatory,frequency_allele,frequency_genotype];
+
 for chromosomeNumber in chromosome:
 	if not os.path.exists(outDirectory):
 		os.makedirs(outDirectory);
 	if not os.path.exists(os.path.join(outDirectory, "chromosome_" + str(chromosomeNumber))):
 		os.makedirs(os.path.join(outDirectory, "chromosome_" + str(chromosomeNumber)));
 	else:
-		chromClause = "'" + chromosomeNumber + "'"
-		outDir = outDirectory + "/chromosome_" + str(chromosomeNumber)
+		chromClause = "'" + chromosomeNumber + "'";
+		outDir = outDirectory + "/chromosome_" + str(chromosomeNumber) + "/";
 		
-		if verbose:
-			print(mysql_command_line + variation + chromClause + "\" | gzip > " + outDir + "/variation.txt");
-		os.system(mysql_command_line + variation + chromClause + "\" | gzip > " + outDir + "/variation.txt");
+		for i in range(len(query_array)):
+			executedSortedGziped(outputfile_array[i],query_array[i]);
 		
-		if verbose:
-			print(mysql_command_line + transcript_variation + chromClause + "\" | gzip > " + outDir + "/transcript_variation.txt");
-		os.system(mysql_command_line + transcript_variation + chromClause + "\" | gzip > " + outDir + "/transcript_variation.txt");
-		
-		if verbose:	
-			print(mysql_command_line + phenotype + chromClause + "\" | gzip > " + outDir + "/phenotype.txt");
-		os.system(mysql_command_line + phenotype + chromClause + "\" | gzip > " + outDir + "/phenotype.txt");
-		
-		if verbose:
-			print(mysql_command_line + xref + chromClause + "\" | gzip > " + outDir + "/xrefs.txt");
-		os.system(mysql_command_line + xref + chromClause + "\" | gzip > " + outDir + "/xrefs.txt");
-		
-		if verbose:
-			print(mysql_command_line + regulatory + chromClause + "\" | gzip > " + outDir + "/regulatory.txt");
-		os.system(mysql_command_line + regulatory + chromClause + "\" | gzip > " + outDir + "/regulatory.txt");
-		
-		if verbose:
-			print(mysql_command_line + frequency_allele + chromClause + "\" | gzip > " + outDir + "/frequency_allele.txt");
-		os.system(mysql_command_line + frequency_allele + chromClause + "\" | gzip > " + outDir + "/frequency_allele.txt");
-		
-		if verbose:
-			print(mysql_command_line + frequency_genotype + chromClause + "\" | gzip > " + outDir + "/frequency_genotype.txt");
-		os.system(mysql_command_line + frequency_genotype + chromClause + "\" | gzip > " + outDir + "/frequency_genotype.txt");
-
