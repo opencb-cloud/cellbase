@@ -8,7 +8,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.bioinfo.cellbase.parser.VariationParser;
+import org.bioinfo.cellbase.parser.VariationParser_old;
 
 public class CellBaseMain {
 
@@ -28,7 +28,7 @@ public class CellBaseMain {
 		// TODO Auto-generated method stub
 		parser = new PosixParser();
 		options = new Options();
-		VariationParser vp = new VariationParser();
+		VariationParser_old vp = new VariationParser_old();
 
 		vp.parseGvfToJson(new File(
 				"/home/echirivella/Downloads/Homo_sapiens.gvf"), new File(
