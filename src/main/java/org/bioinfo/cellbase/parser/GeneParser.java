@@ -474,6 +474,7 @@ public class GeneParser {
 				Collections.sort(transcript.getExons(), new FeatureComparable());
 				
 				Exon prevExon = null;
+				List<Exon> toRemove = new ArrayList<Exon>();
 				for (Exon exon : transcript.getExons()) {
 					if(prevExon != null){
 						
@@ -483,9 +484,11 @@ public class GeneParser {
 							if(prevExon.getEnd() == exon.getStart()-1) {
 								if(prevExon.getId().contains("five_prime_UTR")){
 									exon.setStart(prevExon.getStart());
+									toRemove.add(prevExon);
 								}
 								if(exon.getId().contains("three_prime_UTR")){
 									prevExon.setEnd(exon.getEnd());
+									toRemove.add(exon);
 								}
 							}
 							
@@ -494,16 +497,20 @@ public class GeneParser {
 							if(prevExon.getEnd() == exon.getStart()-1) {
 								if(prevExon.getId().contains("three_prime_UTR")){
 									exon.setStart(prevExon.getStart());
+									toRemove.add(prevExon);
 								}
 								if(exon.getId().contains("five_prime_UTR")){
 									prevExon.setEnd(exon.getEnd());
+									toRemove.add(exon);
 								}
 							}
 						}
 					}
 					
-					
 					prevExon = exon;
+				}
+				for (Exon primeUTR : toRemove) {
+					transcript.getExons().remove(primeUTR);
 				}
 				//TODO 
 			}
