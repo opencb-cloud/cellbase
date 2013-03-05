@@ -73,14 +73,6 @@ else:
 print species;
 print chromosome;
 
-#chromosome=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y', 'MT'];
-#user="anonymous";
-#outDirectory="/home/ensembl/cellbase_v3/variation";
-#database="homo_sapiens_variation_70_37";
-#password="";
-#port="3306";
-#ip="127.0.0.1";
-
 mysql_command_line = "mysql -u " + user + " -h " + host + " -P " + port + " --database=" + database + " -e \""; #no password
 
 variation = "select v.name, sq.name, vf.seq_region_start, vf.seq_region_end, vf.seq_region_strand, vf.allele_string, v.ancestral_allele, vf.map_weight, vf.validation_status, vf.consequence_types, vf.somatic, vf.minor_allele, vf.minor_allele_freq, vf.minor_allele_count from variation v, variation_feature vf, seq_region sq where v.variation_id=vf.variation_id and vf.seq_region_id=sq.seq_region_id and sq.name=";
