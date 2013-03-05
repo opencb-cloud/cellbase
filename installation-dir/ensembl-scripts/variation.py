@@ -9,8 +9,8 @@ def executedSortedGziped(filename,query):
 	os.system(mysql_command_line + query + chromClause + "\" > " + outDir + filename);	
 	
 	if verbose:
-		print("sort -k1,1 " + outDir + filename + " > " + outDir + filename+".sort");
-	os.system("sort -k1,1 " + outDir + filename + " > " + outDir + filename+".sort");
+		print("sort -k1,1 " + outDir + filename + " | unique > " + outDir + filename+".sort ");
+	os.system("sort -k1,1 " + outDir + filename + " | unique > " + outDir + filename+".sort ");
 
 	if verbose:
 		print("gzip " + outDir + filename+".sort");
@@ -20,12 +20,14 @@ def executedSortedGziped(filename,query):
 		print("rm " + outDir + filename);
 	os.system("rm " + outDir + filename);
 	
-	
 hsapiensChromosomes=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y', 'MT'];
+mmusculusChromosomes=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', 'X', 'Y', 'MT'];
+rnorvegicusChromosomes=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'X', 'MT'];
 
 parser = argparse.ArgumentParser(prog="variation");
 parser.add_argument("-o", "--outdir", action="store", dest="outDirectory", help="input directory to save the results");
-parser.add_argument("-c", "--chromosome", action="store", dest="chromosome", help="select the chromosomes if you want to data download");
+parser.add_argument("-c", "--chromosome",type=int,nargs='+', action="store", dest="chromosome", help="select the chromosomes if you want to data download");
+parser.add_argument("-s", "--species", action="store", dest="species", help="select the species you want selected")
 parser.add_argument('-v', action='store_true', default=False, dest='verbose', help='Verbose')
 parser.add_argument("--host", action="store", dest="host", help="database host");
 parser.add_argument("-u", "--user", action="store", dest="user", help="user or database");
@@ -36,26 +38,40 @@ parser.add_argument("--ip", action="store", dest="ip", help="ip of database");
 
 parser.set_defaults(chromosome=hsapiensChromosomes);
 parser.set_defaults(verbose = False);
+parser.set_defaults(species = "hsapiens"); # hsapiens mmusculus rnorvegicus
 parser.set_defaults(host="localhost");
 parser.set_defaults(user="anonymous");
-parser.set_defaults(outDirectory="/tmp/variation_snp");
+
 parser.set_defaults(database="homo_sapiens_variation_70_37");
+parser.set_defaults(outDirectory="/tmp/variation_snp");
 parser.set_defaults(password="");
 parser.set_defaults(port="3306");
 parser.set_defaults(ip="127.0.0.1");
 
 args = parser.parse_args();
 
-
-outDirectory = args.outDirectory;
-verbose = args.verbose;
 host = args.host;
-user = args.user;
-chromosome = args.chromosome;
-database = args.database;
-password = args.password;
-port = args.port;
 ip = args.ip;
+port = args.port;
+
+database = args.database;
+user = args.user;
+password = args.password;
+
+species = args.species;
+speciesid = speciesToId(species);
+chromosome = args.chromosome;
+
+outDirectory = args.outDirectory + "/" + database;
+verbose = args.verbose;
+
+if(species != ""):
+	chromosome = args.chromosome;
+else:
+	chromosome = eval(species+"Chromosomes");
+		
+print species;
+print chromosome;
 
 #chromosome=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y', 'MT'];
 #user="anonymous";
@@ -86,7 +102,7 @@ for chromosomeNumber in chromosome:
 	if not os.path.exists(os.path.join(outDirectory, "chromosome_" + str(chromosomeNumber))):
 		os.makedirs(os.path.join(outDirectory, "chromosome_" + str(chromosomeNumber)));
 	else:
-		chromClause = "'" + chromosomeNumber + "'";
+		chromClause = "'" + str(chromosomeNumber) + "'";
 		outDir = outDirectory + "/chromosome_" + str(chromosomeNumber) + "/";
 		
 		for i in range(len(query_array)):

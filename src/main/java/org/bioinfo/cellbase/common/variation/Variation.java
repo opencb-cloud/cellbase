@@ -3,6 +3,8 @@ package org.bioinfo.cellbase.common.variation;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.plaf.synth.Region;
+
 public class Variation {
 
 	// private String _id;
@@ -26,6 +28,7 @@ public class Variation {
 	private List<PopulationFrequency> populationFrequencies;
 
 	private List<Xref> xrefs = new ArrayList<Xref>();
+	
 	// Required
 	private String featureId;
 
