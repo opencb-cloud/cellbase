@@ -21,7 +21,7 @@ public class Variation {
 	private String assembly;
 	private String source;
 	private String version;
-
+ 
 	private List<SampleGenotype> samples = new ArrayList<SampleGenotype>();
 
 	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>();
