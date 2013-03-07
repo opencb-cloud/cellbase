@@ -8,12 +8,12 @@ import javax.swing.plaf.synth.Region;
 public class Variation {
 
 	// private String _id;
-	private String name;
-	private String chromosome;
-	private int start;
-	private int end;
-	private String strand;
-	private String type;
+	private String name; //0
+	private String chromosome; //1
+	private int start; //2
+	private int end; //3
+	private String strand; //4
+	private String type; 
 	private String reference;
 	private String alternate;
 

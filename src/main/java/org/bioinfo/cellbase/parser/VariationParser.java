@@ -24,48 +24,70 @@ public class VariationParser {
 
 		File[] myFiles = path.listFiles();
 		for (File file : myFiles) {
-			System.out.println(Paths.get(path.toString() ,file.getName()).toFile());
+			System.out.println(Paths.get(path.toString(), file.getName())
+					.toFile());
 			try {
 
 				switch (file.getName()) {
 				case "frequency_allele.txt.sort.gz":
-					fabr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					fabr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					fabr.readLine();
 					break;
 				case "frequency_genotype.txt.sort.gz":
-					fgbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					fgbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					fgbr.readLine();
 					break;
 
 				case "phenotype.txt.sort.gz":
-					pbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					pbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					pbr.readLine();
 					break;
 
 				case "regulatory.txt.sort.gz":
-					rbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					rbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					rbr.readLine();
 					break;
 
 				case "transcript_variation.txt.sort.gz":
-					tvbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					tvbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					tvbr.readLine();
 					break;
 
 				case "variation.txt.sort.gz":
-					vbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					vbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					vbr.readLine();
 					break;
 
 				case "xref.txt.sort.gz":
-					xbr = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(Paths.get(path.toString() ,file.getName()).toFile()))));
+					xbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
 					xbr.readLine();
 					break;
 
@@ -98,8 +120,8 @@ public class VariationParser {
 				nameToFind = vline.split("\t")[0];
 				System.out.println(nameToFind);
 
-				while (nameToFind.compareTo(tvline) == 0) {
-					System.out.println("\t tvline: " + tvline);
+				while (nameToFind.compareTo(tvline.split("\t")[0]) == 0) {
+					System.out.println("..........tvline: " + tvline);
 					tvline = tvbr.readLine();
 				}
 
