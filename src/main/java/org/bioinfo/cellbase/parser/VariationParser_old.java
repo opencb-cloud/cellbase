@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import org.bioinfo.cellbase.common.variation.ConsequenceType;
+import org.bioinfo.cellbase.common.variation.TranscriptVariation;
 import org.bioinfo.cellbase.common.variation.Variation;
 import org.bioinfo.cellbase.common.variation.Xref;
 
@@ -86,7 +86,7 @@ public class VariationParser_old {
 											.parseInt(variantEffect[1])]) {
 									case "-":
 										variation[i]
-												.setConsequenceTypes(new ConsequenceType(
+												.setConsequenceTypes(new TranscriptVariation(
 														variantEffect[0],
 														variantEffect[3], "-",
 														variantEffect[2]));
@@ -95,7 +95,7 @@ public class VariationParser_old {
 									default:
 
 										variation[i]
-												.setConsequenceTypes(new ConsequenceType(
+												.setConsequenceTypes(new TranscriptVariation(
 														variantEffect[0],
 														variantEffect[3],
 														variantSeq[Integer

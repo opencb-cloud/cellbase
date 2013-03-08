@@ -29,6 +29,9 @@ public class CellBaseMain {
 		options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
 		options.addOption(OptionFactory.createOption("indir", "i",  "Input directory with data files"));
 		options.addOption(OptionFactory.createOption("outdir", "o",  "Output directory to save the JSON result"));
+		
+		options.addOption(OptionFactory.createOption("species", "s",  "Sapecies...", false, true));
+		
 		options.addOption(OptionFactory.createOption("log-level", "DEBUG -1, INFO -2, WARNING - 3, ERROR - 4, FATAL - 5", false));
 	}
 	

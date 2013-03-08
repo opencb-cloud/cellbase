@@ -8,11 +8,11 @@ import javax.swing.plaf.synth.Region;
 public class Variation {
 
 	// private String _id;
-	private String name; //0
-	private String chromosome; //1
-	private int start; //2
-	private int end; //3
-	private String strand; //4
+	private String name; 			//0
+	private String chromosome; 		//1
+	private int start; 				//2
+	private int end; 				//3
+	private String strand; 			//4
 	private String type; 
 	private String reference;
 	private String alternate;
@@ -24,7 +24,7 @@ public class Variation {
  
 	private List<SampleGenotype> samples = new ArrayList<SampleGenotype>();
 
-	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>();
+	private List<TranscriptVariation> transcriptVariations = new ArrayList<TranscriptVariation>();
 	private List<PopulationFrequency> populationFrequencies;
 
 	private List<Xref> xrefs = new ArrayList<Xref>();
@@ -46,7 +46,7 @@ public class Variation {
 
 	public Variation(String name, String chromosome, String type, int start, int end, String strand, String reference,
 			String alternate, String species, String assembly, String source, String version,
-			List<SampleGenotype> samples, List<ConsequenceType> consequenceTypes,
+			List<SampleGenotype> samples, List<TranscriptVariation> consequenceTypes,
 			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String featureAlias,
 			String variantFreq, String validationStates) {
 		this.name = name;
@@ -62,7 +62,7 @@ public class Variation {
 		this.source = source;
 		this.version = version;
 		this.samples = samples;
-		this.consequenceTypes = consequenceTypes;
+		this.transcriptVariations = consequenceTypes;
 		this.populationFrequencies = populationFrequencies;
 		this.xrefs = xrefs;
 		this.featureId = featureId;
@@ -111,8 +111,8 @@ public class Variation {
 		this.samples = samples;
 	}
 
-	public void setConsequenceTypes(List<ConsequenceType> consequenceTypes) {
-		this.consequenceTypes = consequenceTypes;
+	public void setConsequenceTypes(List<TranscriptVariation> consequenceTypes) {
+		this.transcriptVariations = consequenceTypes;
 	}
 
 	public void setXrefs(List<Xref> xrefs) {
@@ -159,12 +159,12 @@ public class Variation {
 		this.strand = strand;
 	}
 
-	public List<ConsequenceType> getConsequenceTypes() {
-		return consequenceTypes;
+	public List<TranscriptVariation> getConsequenceTypes() {
+		return transcriptVariations;
 	}
 
-	public void setConsequenceTypes(ConsequenceType consequenceTypes) {
-		this.consequenceTypes.add(consequenceTypes);
+	public void setConsequenceTypes(TranscriptVariation consequenceTypes) {
+		this.transcriptVariations.add(consequenceTypes);
 	}
 
 	public List<PopulationFrequency> getPopulationFrequencies() {
