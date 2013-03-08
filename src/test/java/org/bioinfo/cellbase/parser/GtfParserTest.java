@@ -20,27 +20,27 @@ public class GtfParserTest {
 
 	@Test
 	public void testParseToJson() {
-//		GtfParser coreParser = new GtfParser();
-//		try {
-//			File file = new File("/home/imedina/cellbase_v3/hsapiens/hsapiens_core.json");
-//			file.createNewFile();
-////			String jsonString =
-//			coreParser.parseToJson(new File("/home/imedina/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.69.gtf"), new File("/home/imedina/cellbase_v3/hsapiens/gene_description.txt"), new File("/home/imedina/cellbase_v3/hsapiens/xrefs.txt"), file);
-////			IOUtils.write(file, jsonString);
-//			
-//		} catch (SecurityException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (NoSuchMethodException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (FileFormatException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		GeneParser coreParser = new GeneParser();
+		try {
+			File file = new File("/home/imedina/cellbase_v3/hsapiens/hsapiens_core.json");
+			file.createNewFile();
+//			String jsonString =
+			coreParser.parseToJson(new File("/home/imedina/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.69.gtf"), new File("/home/imedina/cellbase_v3/hsapiens/gene_description.txt"), new File("/home/imedina/cellbase_v3/hsapiens/xrefs.txt"), file);
+//			IOUtils.write(file, jsonString);
+			
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 

@@ -198,8 +198,12 @@ public class GeneParser {
 							exon.setPhase(-1);
 						}
 
-						transcript.setGenomicCodingStart(gtf.getStart());
-						transcript.setGenomicCodingEnd(gtf.getEnd());
+						if(transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
+							transcript.setGenomicCodingStart(gtf.getStart());							
+						}
+						if(transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
+							transcript.setGenomicCodingEnd(gtf.getEnd());							
+						}
 						// only first time
 						if (transcript.getCdnaCodingStart() == 0) {
 							transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
@@ -250,8 +254,12 @@ public class GeneParser {
 							exon.setPhase(-1);
 						}
 
-						transcript.setGenomicCodingStart(gtf.getStart());
-						transcript.setGenomicCodingEnd(gtf.getEnd());
+						if(transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
+							transcript.setGenomicCodingStart(gtf.getStart());
+						}
+						if(transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
+							transcript.setGenomicCodingEnd(gtf.getEnd());
+						}
 						// only first time
 						if (transcript.getCdnaCodingStart() == 0) {
 							transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
