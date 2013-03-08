@@ -15,16 +15,16 @@ public class Variation {
 	private String strand; //4
 	private String type; 
 	private String reference;
-	private String alternate;
+	private String alternate; 
 
-	private String species;
+	private String species; 
 	private String assembly;
 	private String source;
 	private String version;
  
 	private List<SampleGenotype> samples = new ArrayList<SampleGenotype>();
 
-	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>();
+	private List<ConsequenceType> consequenceTypes = new ArrayList<ConsequenceType>(); //9
 	private List<PopulationFrequency> populationFrequencies;
 
 	private List<Xref> xrefs = new ArrayList<Xref>();

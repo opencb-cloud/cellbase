@@ -7,7 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
+
+import org.bioinfo.cellbase.common.variation.Xref;
 
 public class VariationParser {
 
@@ -119,12 +123,22 @@ public class VariationParser {
 			while (vline != null) {
 				nameToFind = vline.split("\t")[0];
 				System.out.println(nameToFind);
-
+				
+				//Transcript variation
 				while (nameToFind.compareTo(tvline.split("\t")[0]) == 0) {
 					System.out.println("..........tvline: " + tvline);
 					tvline = tvbr.readLine();
 				}
-
+				
+				//Xref
+				List<Xref> xrefs = new ArrayList<Xref>();
+				while (nameToFind.compareTo(xline.split("\t")[0]) == 0) {
+					System.out.println("..........xref: " + xline);
+					String[] splitXref = xline.split("\t");
+					xrefs.add(new Xref(splitXref[1],splitXref[2],splitXref[3]));
+					xline = tvbr.readLine();
+				}
+				
 				vline = vbr.readLine();
 			}
 

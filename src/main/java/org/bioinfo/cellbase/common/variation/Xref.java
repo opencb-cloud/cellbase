@@ -2,9 +2,9 @@ package org.bioinfo.cellbase.common.variation;
 
 public class Xref {
 
-	private String id;
-	private String source;
-	private String version;
+	private String id; 			//1
+	private String source; 		//2
+	private String version; 	//3
 
 	public Xref(String id, String source) {
 		this(id, source, "");
