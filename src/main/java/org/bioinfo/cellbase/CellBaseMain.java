@@ -54,11 +54,6 @@ public class CellBaseMain {
 			e.printStackTrace();
 		}
 		
-		VariationParser vp = new VariationParser();
-
-		vp.parseGvfToJson(new File(
-				"/home/echirivella/Downloads/Homo_sapiens.gvf"), new File(
-				"/home/echirivella/Downloads/Homo_sapiens.Json"));
 	}
 
 	private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
