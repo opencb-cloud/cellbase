@@ -19,7 +19,7 @@ public class VariationParser {
 	private BufferedReader tvbr = null;
 	private BufferedReader vbr = null;
 	private BufferedReader xbr = null;
-
+ 
 	public VariationParser() {
 
 		File[] myFiles = path.listFiles();
