@@ -4,3 +4,4 @@ target*
 installation-dir/libs/*
 .pydevproject
 .project
+*.iml
