@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bioinfo.cellbase.common.core.Exon;
-import org.bioinfo.cellbase.common.core.Gene;
-import org.bioinfo.cellbase.common.core.Transcript;
-import org.bioinfo.cellbase.common.core.Xref;
+import org.bioinfo.cellbase.lib.common.core.Exon;
+import org.bioinfo.cellbase.lib.common.core.Gene;
+import org.bioinfo.cellbase.lib.common.core.Transcript;
+import org.bioinfo.cellbase.lib.common.core.Xref;
 import org.bioinfo.commons.io.TextFileWriter;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
@@ -328,9 +328,9 @@ public class GeneParser {
 
 		Map<String, Gene> genes = new HashMap<String, Gene>();
 		Map<String, Transcript> transcripts = new HashMap<String, Transcript>();
-		
+
 		Map<String, String> attributes = new HashMap<>();
-		
+
 		System.out.println("READ FILE START::::::::::::::::::::::::::");
 		String line = "";
 		BufferedReader br = new BufferedReader(new FileReader(getFile));
@@ -355,14 +355,14 @@ public class GeneParser {
 			attributes.clear();
 			String[] atrrFields = fields[8].split(";");
 			String[] attrKeyValue;
-			for(String attrField: atrrFields) {
+			for (String attrField : atrrFields) {
 				attrKeyValue = attrField.split("=");
 				attributes.put(attrKeyValue[0].toLowerCase(), attrKeyValue[1]);
 			}
-			
+
 			if (feature.equalsIgnoreCase("CDS")) {
 				name = "";
-//				parent = group[1].split("=")[1];
+				// parent = group[1].split("=")[1];
 				parent = attributes.get("parent");
 				int phase = Integer.parseInt(fields[7]);
 				Transcript t = transcripts.get(parent);
@@ -374,48 +374,48 @@ public class GeneParser {
 				e.setEnd(end);
 				e.setStrand(strand);
 				e.setPhase(phase);
-				
+
 				e.setGenomicCodingStart(start);
 				e.setGenomicCodingEnd(end);
-				
 
-				// just in case...
-				if(t.getExons() == null) {
-					t.setExons(new ArrayList<Exon>());
-				}
-				
-				// before adding
-				if(t.getExons().size() > 0) {
-					if(strand.equals("1") || strand.equals("+")) {
-						Exon lastExon = t.getExons().get(t.getExons().size()-1);
-						if(lastExon.getEnd() == e.getStart()-1) {
-							lastExon.setEnd(e.getEnd());
-							lastExon.setId(e.getId());
-							lastExon.setGenomicCodingStart(e.getStart());
-							lastExon.setGenomicCodingEnd(e.getEnd());
-						}else {
-							t.getExons().add(e);
-						}
-					}else {	// negative strand
-						
-					}
-				}else {
-					t.getExons().add(e);					
-				}
-				
-				
-				
-//				Collections.sort(list, new FeatureComparable());
+				// // just in case...
+				// if(t.getExons() == null) {
+				// t.setExons(new ArrayList<Exon>());
+				// }
+				//
+				// // before adding
+				// if(t.getExons().size() > 0) {
+				// if(strand.equals("1") || strand.equals("+")) {
+				// Exon lastExon = t.getExons().get(t.getExons().size()-1);
+				// if(lastExon.getEnd() == e.getStart()-1) {
+				// lastExon.setEnd(e.getEnd());
+				// lastExon.setId(e.getId());
+				// lastExon.setGenomicCodingStart(e.getStart());
+				// lastExon.setGenomicCodingEnd(e.getEnd());
+				// }else {
+				// t.getExons().add(e);
+				// }
+				// }else { // negative strand
+				//
+				// }
+				// }else {
+				// t.getExons().add(e);
+				// }
+
+				t.getExons().add(e);
+
+				// Collections.sort(list, new FeatureComparable());
 
 			}
 			if (feature.equalsIgnoreCase("five_prime_UTR") || feature.equalsIgnoreCase("three_prime_UTR")) {
-				
-//				name = "";
-//				parent = group[1].split("=")[1];
-//				FivePrimeUtr fivePrimeUtr = new FivePrimeUtr(id, chromosome, start, end, strand);
-//				t.getFivePrimeUtr().add(fivePrimeUtr);
+
+				// name = "";
+				// parent = group[1].split("=")[1];
+				// FivePrimeUtr fivePrimeUtr = new FivePrimeUtr(id, chromosome,
+				// start, end, strand);
+				// t.getFivePrimeUtr().add(fivePrimeUtr);
 				parent = attributes.get("parent");
-				int phase = Integer.parseInt(fields[7]);
+				// int phase = Integer.parseInt(fields[7]);
 				Transcript t = transcripts.get(parent);
 
 				Exon e = new Exon();
@@ -424,22 +424,22 @@ public class GeneParser {
 				e.setStart(start);
 				e.setEnd(end);
 				e.setStrand(strand);
-				e.setPhase(phase);
-				
+				// e.setPhase(phase);
+
 				e.setGenomicCodingStart(start);
 				e.setGenomicCodingEnd(end);
 				t.getExons().add(e);
 
 			}
-//			if (feature.equalsIgnoreCase("three_prime_UTR")) {
-				// name = "";
-				// parent = group[1].split("=")[1];
-				
-				// Transcript t = transcriptsId.get(parent);
-				// ThreePrimeUtr threePrimeUtr = new ThreePrimeUtr(id,
-				// chromosome, start, end, strand);
-				// t.getThreePrimeUtr().add(threePrimeUtr);
-//			}
+			// if (feature.equalsIgnoreCase("three_prime_UTR")) {
+			// name = "";
+			// parent = group[1].split("=")[1];
+
+			// Transcript t = transcriptsId.get(parent);
+			// ThreePrimeUtr threePrimeUtr = new ThreePrimeUtr(id,
+			// chromosome, start, end, strand);
+			// t.getThreePrimeUtr().add(threePrimeUtr);
+			// }
 			if (feature.equalsIgnoreCase("mRNA")) {
 				id = group[0].split("=")[1];
 				name = group[1].split("=")[1];
@@ -447,51 +447,134 @@ public class GeneParser {
 
 				Transcript tr = new Transcript();
 				tr.setExons(new ArrayList<Exon>());
+				tr.setXrefs(new ArrayList<Xref>());
 				tr.setId(id);
 				tr.setName(name);
+				tr.setBiotype("");
+				tr.setStatus("");
 				tr.setChromosome(chromosome);
 				tr.setStart(start);
 				tr.setEnd(end);
+				tr.setGenomicCodingStart(start);
+				tr.setGenomicCodingStart(end);
 				tr.setStrand(strand);
 
 				transcripts.put(id, tr);
 				genes.get(parent).getTranscripts().add(tr);
 			}
 			if (feature.equalsIgnoreCase("gene")) {
-				Gene g = new Gene();
-				g.setTranscripts(new ArrayList<Transcript>());
-				g.setId(id);
-				g.setName(name);
-				g.setChromosome(chromosome);
-				g.setStart(start);
-				g.setEnd(end);
-				g.setStrand(strand);
 
 				name = group[1].split("=")[1];
+				Gene g = new Gene(id, name, "", "", chromosome, start, end, strand, "JGI", "",
+						new ArrayList<Transcript>());
+				// g.setTranscripts(new ArrayList<Transcript>());
+				// g.setId(id);
+				// g.setBiotype("");
+				// g.setStatus("");
+				// g.setName(name);
+				// g.setChromosome(chromosome);
+				// g.setStart(start);
+				// g.setEnd(end);
+				// g.setStrand(strand);
+
 				genes.put(id, g);
 			}
 
 		}
 		br.close();
 
-		Gson gson = new Gson();
-		System.out.println("");
-		System.out.println(gson.toJson(genes.get("Ciclev10007219m.g")));
-		System.out.println("END LOAD");
+		// Reorder
+		for (String geneId : genes.keySet()) {
+			Gene gene = genes.get(geneId);
+			for (Transcript transcript : gene.getTranscripts()) {
+				Collections.sort(transcript.getExons(), new FeatureComparable());
 
-		// Map<String, Transcript> transcriptsId = new HashMap<String,
-		// Transcript>();
+				Exon prevExon = null;
+				List<Exon> toRemove = new ArrayList<Exon>();
+				for (Exon exon : transcript.getExons()) {
+					if (prevExon != null) {
+
+						String strand = exon.getStrand();
+						if (strand.equals("1") || strand.equals("+")) {
+
+							if (prevExon.getEnd() == exon.getStart() - 1) {
+								if (prevExon.getId().contains("five_prime_UTR")) {
+									exon.setStart(prevExon.getStart());
+//									transcript.setGenomicCodingStart(exon.getGenomicCodingStart());
+									toRemove.add(prevExon);
+								}
+								if (exon.getId().contains("three_prime_UTR")) {
+									prevExon.setEnd(exon.getEnd());
+//									transcript.setGenomicCodingEnd(prevExon.getGenomicCodingEnd());
+									toRemove.add(exon);
+								}
+							}
+
+						} else { // negative strand
+
+							if (prevExon.getEnd() == exon.getStart() - 1) {
+								if (prevExon.getId().contains("three_prime_UTR")) {
+									exon.setStart(prevExon.getStart());
+//									transcript.setGenomicCodingStart(exon.getGenomicCodingStart());
+									toRemove.add(prevExon);
+								}
+								if (exon.getId().contains("five_prime_UTR")) {
+									prevExon.setEnd(exon.getEnd());
+//									transcript.setGenomicCodingEnd(prevExon.getGenomicCodingEnd());
+									toRemove.add(exon);
+								}
+							}
+						}
+					}
+
+					prevExon = exon;
+				}
+				for (Exon primeUTR : toRemove) {
+					transcript.getExons().remove(primeUTR);
+				}
+				
+				//Update genomic coding region start and end on transcripts
+				int i = 1;
+				Exon e = transcript.getExons().get(0);
+				while(e.getId().contains("prime_UTR")){
+					e = transcript.getExons().get(i);
+					i++;
+				}
+				transcript.setGenomicCodingStart(e.getGenomicCodingStart());
+				
+				int exonSize = transcript.getExons().size();
+				int j = exonSize-2;
+				Exon ee = transcript.getExons().get(exonSize-1);
+				while(ee.getId().contains("prime_UTR")){
+					ee = transcript.getExons().get(j);
+					j--;
+				}
+				transcript.setGenomicCodingEnd(ee.getGenomicCodingEnd());
+				
+			}
+		}
+
+		Gson gson = new Gson();
+		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
+		System.out.println("");
+		System.out.println("START WRITE");
+		for (String geneId : genes.keySet()) {
+			Gene gene = genes.get(geneId);
+			tfw.writeStringToFile(gson.toJson(gene));
+			tfw.writeStringToFile("\n");
+		}
+		tfw.close();
+
+//		System.out.println(gson.toJson(genes.get("Ciclev10007224m.g")));
+		System.out.println(gson.toJson(genes.get("Ciclev10008515m.g")));
+		System.out.println(gson.toJson(genes.get("Ciclev10007219m.g")));
+		System.out.println("END WRITE");
 	}
 
 	private class FeatureComparable implements Comparator<Object> {
 		@Override
 		public int compare(Object exon1, Object exon2) {
-			if (exon1 instanceof Exon && exon2 instanceof Exon) {
-				if (((Exon) exon1).getStart() > ((Exon) exon2).getStart())
-					return 1;
-				return 0;
-			} else
-				return Integer.MIN_VALUE;
+			return ((Exon) exon1).getStart() - ((Exon) exon2).getStart();
 		}
 	}
 }
