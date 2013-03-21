@@ -7,7 +7,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -15,7 +21,7 @@ import org.bioinfo.cellbase.common.variation.Xref;
 
 public class VariationParser {
 
-	private File path = new File("/home/echirivella/cellbase_v3/chromosome_9/");
+	private File path = new File("/home/echirivella/");
 	private BufferedReader fabr = null;
 	private BufferedReader fgbr = null;
 	private BufferedReader pbr = null;
@@ -23,7 +29,9 @@ public class VariationParser {
 	private BufferedReader tvbr = null;
 	private BufferedReader vbr = null;
 	private BufferedReader xbr = null;
- 
+	private HashMap<String,String> seq_region = new HashMap<String,String>();
+	Connection conn = null;
+	
 	public VariationParser() {
 
 		File[] myFiles = path.listFiles();
@@ -33,7 +41,7 @@ public class VariationParser {
 			try {
 
 				switch (file.getName()) {
-				case "frequency_allele.txt.sort.gz":
+				case "frequency_allele.txt.gz":
 					fabr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -41,7 +49,7 @@ public class VariationParser {
 											.toFile()))));
 					fabr.readLine();
 					break;
-				case "frequency_genotype.txt.sort.gz":
+				case "frequency_genotype.txt.gz":
 					fgbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -50,7 +58,7 @@ public class VariationParser {
 					fgbr.readLine();
 					break;
 
-				case "phenotype.txt.sort.gz":
+				case "phenotype.txt.gz":
 					pbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -59,7 +67,7 @@ public class VariationParser {
 					pbr.readLine();
 					break;
 
-				case "regulatory.txt.sort.gz":
+				case "regulatory.txt.gz":
 					rbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -68,7 +76,7 @@ public class VariationParser {
 					rbr.readLine();
 					break;
 
-				case "transcript_variation.txt.sort.gz":
+				case "transcript_variation.txt.gz":
 					tvbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -77,7 +85,7 @@ public class VariationParser {
 					tvbr.readLine();
 					break;
 
-				case "variation.txt.sort.gz":
+				case "variation.txt.gz":
 					vbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -86,7 +94,7 @@ public class VariationParser {
 					vbr.readLine();
 					break;
 
-				case "xref.txt.sort.gz":
+				case "xref.txt.gz":
 					xbr = new BufferedReader(
 							new InputStreamReader(new GZIPInputStream(
 									new FileInputStream(Paths.get(
@@ -108,7 +116,29 @@ public class VariationParser {
 		}
 		CoreVariationParser();
 	}
+	
+	private void createTables(){
+		try {
+			String vline = null;
 
+			Class.forName("com.mysql.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:sqlite:mydb.db");
+			Statement createTables = conn.createStatement();
+			createTables.executeUpdate("CREATE TABLE variation(variation_id INT,name TEXT, ancestral_allele TEXT");
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO variation (?,?,?)");
+			while ((vline = vbr.readLine())!= null) {
+				String[] vlineFields = vline.split("\t");
+					  ps.setInt(1, Integer.parseInt(vlineFields[0]));
+					  ps.setString(2, vlineFields[2]);
+					  ps.setString(3, vlineFields[4]);
+					  ps.execute();
+			}
+		} catch (ClassNotFoundException | SQLException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private void CoreVariationParser() {
 		String nameToFind = null;
 		try {
