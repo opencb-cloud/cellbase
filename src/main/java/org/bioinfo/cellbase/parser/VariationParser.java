@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -23,6 +24,9 @@ public class VariationParser {
 	private BufferedReader tvbr = null;
 	private BufferedReader vbr = null;
 	private BufferedReader xbr = null;
+	
+	private HashMap<String,String> seq_region = new HashMap<String,String>();
+	
  
 	public VariationParser() {
 
