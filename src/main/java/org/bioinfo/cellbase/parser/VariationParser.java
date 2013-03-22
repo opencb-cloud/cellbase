@@ -120,11 +120,13 @@ public class VariationParser {
 	private void createTables(){
 		try {
 			String vline = null;
-
+			int contador = 0;
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:sqlite:mydb.db");
 			Statement createTables = conn.createStatement();
 			createTables.executeUpdate("CREATE TABLE variation(variation_id INT,name TEXT, ancestral_allele TEXT");
+			createTables.executeUpdate("CREATE TABLE variation_feature(variation_feature_id INT, seq_region_id INT, seq_region_start INT, seq_region_end INT, seq_region_strand INT, variation_id INT, allele_string TEXT,variation_name TEXT,map_weight TEXT,validation_status TEXT, consequence_types TEXT,somatic INT, minor_allele INT, minor_allele_freq FLOAT, minor_allele_count INT)");
+			createTables.executeUpdate("CREATE TABLE transcript_variation(variation_feature_id INT, feature_stable_id TEXT, allele_string TEXT, somatic INT, consequence_types TEXT, cds_end INT, cdna_start INT, cdna_end INT, translation_start INT, translation_end INT,distance_to_transcript INT,codon_allele_string INT,pep_allele_string TEXT,hgvs_genomic TEXT,hgvs_transcript TEXT,hgvs_protein TEXT,polyphen_prediction TEXT,polyphen_score FLOAT ,sift_prediction TEXT,sift_score FLOAT)");
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO variation (?,?,?)");
 			while ((vline = vbr.readLine())!= null) {
 				String[] vlineFields = vline.split("\t");
@@ -132,6 +134,9 @@ public class VariationParser {
 					  ps.setString(2, vlineFields[2]);
 					  ps.setString(3, vlineFields[4]);
 					  ps.execute();
+					  if(contador % 100000 == 0){
+						  System.out.println(contador);
+					  }
 			}
 		} catch (ClassNotFoundException | SQLException | IOException e) {
 			// TODO Auto-generated catch block
