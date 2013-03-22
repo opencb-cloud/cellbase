@@ -1,185 +1,186 @@
 package org.bioinfo.cellbase.parser;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.bioinfo.cellbase.common.variation.ConsequenceType;
-import org.bioinfo.cellbase.common.variation.Variation;
 import org.bioinfo.cellbase.common.variation.Xref;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 public class VariationParser {
-	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 
+	private File path = new File("/home/echirivella/");
+	private BufferedReader fabr = null;
+	private BufferedReader fgbr = null;
+	private BufferedReader pbr = null;
+	private BufferedReader rbr = null;
+	private BufferedReader tvbr = null;
+	private BufferedReader vbr = null;
+	private BufferedReader xbr = null;
+	private HashMap<String,String> seq_region = new HashMap<String,String>();
+	Connection conn = null;
+	
 	public VariationParser() {
 
-	}
+		File[] myFiles = path.listFiles();
+		for (File file : myFiles) {
+			System.out.println(Paths.get(path.toString(), file.getName())
+					.toFile());
+			try {
 
-	public void parseGvfToJson(File variationFile, File outJsonFile) {
-		try {
+				switch (file.getName()) {
+				case "frequency_allele.txt.gz":
+					fabr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					fabr.readLine();
+					break;
+				case "frequency_genotype.txt.gz":
+					fgbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					fgbr.readLine();
+					break;
 
-			double timestart = System.currentTimeMillis();
-			int contador = 0;
-			String line;
+				case "phenotype.txt.gz":
+					pbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					pbr.readLine();
+					break;
 
-			// List<Variation> container = new ArrayList<Variation>();
-			Variation[] variation = null;
+				case "regulatory.txt.gz":
+					rbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					rbr.readLine();
+					break;
 
-			String[] data = new String[9];
-			String[] attributesData = null;
-			int numberVariantSeq = 0;
-			String[] variantSeq = null;
+				case "transcript_variation.txt.gz":
+					tvbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					tvbr.readLine();
+					break;
 
-			// Java 7 IO code
-			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(),StandardOpenOption.CREATE);
-			BufferedReader br = Files.newBufferedReader(Paths.get(variationFile.toURI()), Charset.defaultCharset());
-			while ((line = br.readLine()) != null) {
-				if (!line.startsWith("##")) {
-					data = line.split("\t");
-					attributesData = data[8].split(";");
-					numberVariantSeq = attributesData[1].split("=")[1]
-							.split(",").length;
-					variation = new Variation[numberVariantSeq];
-					for (String string : attributesData) {
-						if (string.contains("Variant_seq")) {
-							variantSeq = string.split("=")[1].split(",");
-							break;// Testear este break;
-						}
+				case "variation.txt.gz":
+					vbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					vbr.readLine();
+					break;
 
-					}
-					// System.out.println(attributesData[1].split("=")[1].split(",").length);
-					for (int i = 0; i < numberVariantSeq; i++) {
-						variation[i] = new Variation();
-						variation[i].setChromosome(data[0]);
-						variation[i].setType(data[2]);
-						variation[i].setStart(Integer.parseInt(data[3]));
-						variation[i].setEnd(Integer.parseInt(data[4]));
-						variation[i].setStrand(data[6]);
-						for (int j = 0; j < attributesData.length; j++) {
-							String[] aux = attributesData[j].split("=");
-							switch (aux[0].toLowerCase()) {
-							case "id":
-								variation[i].setFeatureId(aux[1]);
-								break;
-							case "variant_seq":
-								variation[i].setAlternate(aux[1].split(",")[i]);
-								break;
-							case "variant_effect":
-								// System.out.println(aux[1]);
-								String[] variantEffect = aux[1].split(" ");
-								// System.out.println("sadadasdadas ->>>"
-								// +Integer.parseInt(variantEffect[1]));
-								// System.out.println("la i vale... >>>>>>" +
-								// i);
-								if (Integer.parseInt(variantEffect[1]) == i) {
-									switch (variantSeq[Integer
-											.parseInt(variantEffect[1])]) {
-									case "-":
-										variation[i]
-												.setConsequenceTypes(new ConsequenceType(
-														variantEffect[0],
-														variantEffect[3], "-",
-														variantEffect[2]));
-										break;
+				case "xref.txt.gz":
+					xbr = new BufferedReader(
+							new InputStreamReader(new GZIPInputStream(
+									new FileInputStream(Paths.get(
+											path.toString(), file.getName())
+											.toFile()))));
+					xbr.readLine();
+					break;
 
-									default:
-
-										variation[i]
-												.setConsequenceTypes(new ConsequenceType(
-														variantEffect[0],
-														variantEffect[3],
-														variantSeq[Integer
-																.parseInt(variantEffect[1])],
-														variantEffect[2]));
-										break;
-									}
-								}
-
-								break;
-							case "reference_seq":
-								variation[i].setReference(aux[1]);
-								break;
-							case "dbxref":
-								if (numberVariantSeq == 1) {
-									String[] dbxref = aux[1].split(",", -1);
-
-									String[] fields;
-									for (int z = 0; z < dbxref.length; z++) {
-										fields = dbxref[z].split(":");
-										variation[i].setXrefs(new Xref(
-												fields[0], fields[1]));
-									}
-								}
-
-								break;
-							case "validation_states":
-								variation[i].setValidationStates(aux[1]);
-								break;
-							default:
-								break;
-							}
-						}
-
-					}
-					for (Variation var : variation) {
-						// container.add(var);
-						bw.write(gson.toJson(var) + "\n");
-					}
+				default:
+					break;
 				}
-				contador++;
-				if (contador % 100000 == 0) {
-					System.out.println((System.currentTimeMillis() - timestart)
-							/ 1000 + " Segundos");
-					System.out.println(contador);
-				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-
-			br.close();
-			bw.close();
-		} catch (IOException e) {
+		}
+		CoreVariationParser();
+	}
+	
+	private void createTables(){
+		try {
+			String vline = null;
+			int contador = 0;
+			Class.forName("com.mysql.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:sqlite:mydb.db");
+			Statement createTables = conn.createStatement();
+			createTables.executeUpdate("CREATE TABLE variation(variation_id INT,name TEXT, ancestral_allele TEXT");
+			createTables.executeUpdate("CREATE TABLE variation_feature(variation_feature_id INT, seq_region_id INT, seq_region_start INT, seq_region_end INT, seq_region_strand INT, variation_id INT, allele_string TEXT,variation_name TEXT,map_weight TEXT,validation_status TEXT, consequence_types TEXT,somatic INT, minor_allele INT, minor_allele_freq FLOAT, minor_allele_count INT)");
+			createTables.executeUpdate("CREATE TABLE transcript_variation(variation_feature_id INT, feature_stable_id TEXT, allele_string TEXT, somatic INT, consequence_types TEXT, cds_end INT, cdna_start INT, cdna_end INT, translation_start INT, translation_end INT,distance_to_transcript INT,codon_allele_string INT,pep_allele_string TEXT,hgvs_genomic TEXT,hgvs_transcript TEXT,hgvs_protein TEXT,polyphen_prediction TEXT,polyphen_score FLOAT ,sift_prediction TEXT,sift_score FLOAT)");
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO variation (?,?,?)");
+			while ((vline = vbr.readLine())!= null) {
+				String[] vlineFields = vline.split("\t");
+					  ps.setInt(1, Integer.parseInt(vlineFields[0]));
+					  ps.setString(2, vlineFields[2]);
+					  ps.setString(3, vlineFields[4]);
+					  ps.execute();
+					  if(contador % 100000 == 0){
+						  System.out.println(contador);
+					  }
+			}
+		} catch (ClassNotFoundException | SQLException | IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	public String[] chromosomesContains(String variationFile) {
-		String line;
-
-		String[] fields1;
-		Set<String> chromosomes = new LinkedHashSet<>();
-		// BufferedReader br1 =
-		// Files.newBufferedReader(Paths.get(variationFile.toURI()),
-		// Charset.defaultCharset());
+	
+	private void CoreVariationParser() {
+		String nameToFind = null;
 		try {
-			BufferedReader br1 = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(variationFile))));
-			while ((line = br1.readLine()) != null) {
-				if (!line.startsWith("##")) {
-					fields1 = line.split("\t");
-					if (!chromosomes.contains(fields1[0])) {
-						chromosomes.add(fields1[0]);
-						System.out.println(fields1[0]);
-					}
+			String faline = fabr.readLine();
+			String fgline = fgbr.readLine();
+			String pline = pbr.readLine();
+			String rline = rbr.readLine();
+			String tvline = tvbr.readLine();
+			String vline = vbr.readLine();
+			String xline = xbr.readLine();
+
+			while (vline != null) {
+				nameToFind = vline.split("\t")[0];
+				System.out.println(nameToFind);
+				
+				//Transcript variation
+				while (nameToFind.compareTo(tvline.split("\t")[0]) == 0) {
+					System.out.println("..........tvline: " + tvline);
+					tvline = tvbr.readLine();
 				}
+				
+				//Xref
+				List<Xref> xrefs = new ArrayList<Xref>();
+				while (nameToFind.compareTo(xline.split("\t")[0]) == 0) {
+					System.out.println("..........xref: " + xline);
+					String[] splitXref = xline.split("\t");
+					xrefs.add(new Xref(splitXref[1],splitXref[2],splitXref[3]));
+					xline = tvbr.readLine();
+				}
+				
+				vline = vbr.readLine();
 			}
-			br1.close();
-			System.out.println(chromosomes);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (String[]) chromosomes.toArray();
 	}
+
 }

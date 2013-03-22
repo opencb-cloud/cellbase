@@ -1,6 +1,6 @@
 package org.bioinfo.cellbase.common.variation;
 
-public class ConsequenceType {
+public class TranscriptVariation {
 
 	private String soAccession;
 	private String soName;
@@ -8,7 +8,7 @@ public class ConsequenceType {
 	private String allele;
 	private String featureType;
 	
-	public ConsequenceType(String consequenceType, String trancriptId, String allele, String featureType) {
+	public TranscriptVariation(String consequenceType, String trancriptId, String allele, String featureType) {
 		this.soName = consequenceType;
 		this.trancriptId = trancriptId;
 		this.allele = allele;
