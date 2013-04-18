@@ -20,9 +20,20 @@ public class GenomeSequenceFastaParserTest {
     @Test
     public void testParseToJson() {
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
-
         genomeSequenceFastaParser.parseToJson(new File(USER_HOME + "/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.68.fasta"), new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence.json"));
 //		fail("Not yet implemented");
+    }
+
+    @Test
+    public void testParseFastaWithConservedRegions() {
+        String USER_HOME = System.getProperty("user.home");
+        Path phastConsFolderPath  = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/");
+        Path phylopConsFolderPath  = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phylop/");
+
+        File fasta = new File(USER_HOME + "/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.68.fasta");
+        File json = new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence.json");
+        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
+        genomeSequenceFastaParser.parseToJsonWithConservedRegions(fasta, json,phastConsFolderPath,phylopConsFolderPath);
     }
 
     @Test
@@ -100,25 +111,8 @@ public class GenomeSequenceFastaParserTest {
 
     @Test
     public void testQueryConservedRegions() throws IOException, SQLException {
-        String chrFile = "22";
-        Path dbPath = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/chr"+chrFile+".phastCons46way.primates.wigFix.db");
-        Connection conn = null;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
-//            conn.setAutoCommit(false);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        Statement query = conn.createStatement();
-        ResultSet rs = query.executeQuery("select * from conserved_region where position=16102591");
-        while(rs.next()){
-            String pos = rs.getString(1);
-            float value = rs.getFloat(2);
-            System.out.println(pos+" - "+value);
-        }
-        conn.close();
+        Path conservedRegionFolderPath = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/");
+        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
+        genomeSequenceFastaParser.queryConservedRegions(conservedRegionFolderPath, "phastCons", "22", 16050001, 16051999);
     }
 }

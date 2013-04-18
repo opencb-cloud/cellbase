@@ -51,9 +51,11 @@
 	</dependencies>
 
 	<build>
-		<finalName>cellbase</finalName>
-		<sourceDirectory>src/main</sourceDirectory>
-		<testSourceDirectory>src/test</testSourceDirectory>
+        <directory>target</directory>
+        <outputDirectory>target/classes</outputDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <finalName>cellbase</finalName>
 
 		<extensions>
 			<extension>
