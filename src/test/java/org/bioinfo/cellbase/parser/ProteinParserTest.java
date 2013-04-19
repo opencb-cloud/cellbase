@@ -21,7 +21,7 @@ public class ProteinParserTest {
 	public void testParseUniprotToJson() {
 		String uniprotFileName = "/home/imedina/Downloads/uniprot_sprot/chunks/chunk_1.xml";
 		try {
-			ProteinParser.parseUniprotToJson(new File(uniprotFileName), "Homo sapiens", new File("/tmp/protein.json"));
+			ProteinParser.parseUniprotToJson(new File(uniprotFileName), "Homo sapiens", new File("/home/imedina/cellbase_v3/hsapiens/protein.json"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
