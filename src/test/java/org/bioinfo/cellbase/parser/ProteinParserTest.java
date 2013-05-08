@@ -17,15 +17,15 @@ public class ProteinParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	@Test
-	public void testParseUniprotToJson() {
-		String uniprotFileName = "/home/imedina/Downloads/uniprot_sprot/chunks/chunk_1.xml";
-		try {
-			ProteinParser.parseUniprotToJson(new File(uniprotFileName), "Homo sapiens", new File("/home/imedina/cellbase_v3/hsapiens/protein.json"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
+//	@Test
+//	public void testParseUniprotToJson() {
+//		String uniprotFileName = "/home/imedina/Downloads/uniprot_sprot/chunks/chunk_1.xml";
+//		try {
+//			ProteinParser.parseUniprotToJson(new File(uniprotFileName), "Homo sapiens", new File("/home/imedina/cellbase_v3/hsapiens/protein.json"));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//	}
 
 }
