@@ -17,7 +17,7 @@ import java.util.zip.GZIPInputStream;
 public class GenomeSequenceFastaParserTest {
     String USER_HOME = System.getProperty("user.home");
 
-    @Test
+//    @Test
     public void testParseToJson() {
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
         genomeSequenceFastaParser.parseToJson(new File(USER_HOME + "/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.68.fasta"), new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence.json"));
@@ -36,7 +36,7 @@ public class GenomeSequenceFastaParserTest {
         genomeSequenceFastaParser.parseToJsonWithConservedRegions(fasta, json,phastConsFolderPath,phylopConsFolderPath);
     }
 
-    @Test
+//    @Test
     public void testOrangeParseToJson() {
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
         genomeSequenceFastaParser.parseToJson(new File(USER_HOME + "/cellbase_v3/cclementina/Cclementina_v1.0_scaffolds.fasta"), new File(USER_HOME + "/cellbase_v3/cclementina/cclementina_genome_sequence.json"));
@@ -44,7 +44,7 @@ public class GenomeSequenceFastaParserTest {
 
 
 
-    @Test
+//    @Test
     public void testConservedRegions() throws IOException, SQLException {
         String chrFile = "22";
         Path filePath = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/chr"+chrFile+".phastCons46way.primates.wigFix.gz");
@@ -101,7 +101,7 @@ public class GenomeSequenceFastaParserTest {
     }
 
 
-    @Test
+//    @Test
     public void testConservedRegionsSQLite() throws IOException, SQLException, ClassNotFoundException,SQLException {
         Path conservedRegionFolderPath = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/");
 
@@ -109,7 +109,7 @@ public class GenomeSequenceFastaParserTest {
         genomeSequenceFastaParser.conservedRegionsSQLite(conservedRegionFolderPath, "phastCons", "22");
     }
 
-    @Test
+//    @Test
     public void testQueryConservedRegions() throws IOException, SQLException {
         Path conservedRegionFolderPath = Paths.get(USER_HOME + "/cellbase_v3/hsapiens/conserved_regions/phastCons/");
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();

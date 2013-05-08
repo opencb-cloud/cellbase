@@ -21,7 +21,7 @@ public class RegulatoryParserTest {
     static int CHUNKSIZE = 2000;
     Gson gson = new Gson();
 
-    @Test
+//    @Test
     public void testCreateSQLiteRegulatoryFiles() throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
         List<String> GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "group");
         List<String> GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT", "TEXT");
@@ -107,7 +107,7 @@ public class RegulatoryParserTest {
                 }
             }
             for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-                bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
+                bw.write(gson.toJson(result.getValue()) + "\n");
             }
             /*********/
 
@@ -128,7 +128,7 @@ public class RegulatoryParserTest {
                 }
             }
             for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-                bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
+                bw.write(gson.toJson(result.getValue()) + "\n");
             }
             /*********/
 
@@ -149,7 +149,7 @@ public class RegulatoryParserTest {
                 }
             }
             for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-                bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
+                bw.write(gson.toJson(result.getValue()) + "\n");
             }
             /*********/
 
@@ -170,7 +170,7 @@ public class RegulatoryParserTest {
                 }
             }
             for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-                bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
+                bw.write(gson.toJson(result.getValue()) + "\n");
             }
             /*********/
 
