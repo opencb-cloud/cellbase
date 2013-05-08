@@ -2,21 +2,29 @@ package org.bioinfo.cellbase.parser;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.bioinfo.cellbase.lib.common.core.Exon;
 import org.bioinfo.cellbase.lib.common.core.Gene;
+import org.bioinfo.cellbase.lib.common.core.MiRNAGene;
+import org.bioinfo.cellbase.lib.common.core.MiRNAGene.MiRNAMature;
 import org.bioinfo.cellbase.lib.common.core.Transcript;
+import org.bioinfo.cellbase.lib.common.core.TranscriptTfbs;
 import org.bioinfo.cellbase.lib.common.core.Xref;
 import org.bioinfo.commons.io.TextFileWriter;
 import org.bioinfo.commons.io.utils.FileUtils;
@@ -46,14 +54,17 @@ public class GeneParser {
 		exonDict = new HashMap<>(8000000);
 	}
 
-	public void parseToJson(File getFile, File geneDescriptionFile, File xrefsFile, File outJsonFile)
+	public void parseToJson(File getFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceFile, File outJsonFile)
 			throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
 		FileUtils.checkFile(getFile);
 		init();
 
 		String geneId;
 		String transcriptId;
-
+		String chromosome = "";
+		String chromSequence = "";
+		String exonSequence = "";
+		
 		Gene gene = null;
 		Transcript transcript;
 		Exon exon = null;
@@ -82,6 +93,25 @@ public class GeneParser {
 			}
 		}
 
+		Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
+		if(tfbsFile != null && tfbsFile.exists()) {
+			List<String> lines = IOUtils.readLines(tfbsFile);
+			for (String line : lines) {
+				fields = line.split("\t", -1);
+				if (!tfbsMap.containsKey(fields[0])) {
+					tfbsMap.put(fields[0], new ArrayList<TranscriptTfbs>());
+				}
+				tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
+			}
+		}
+		
+		// Loading MiRNAGene file
+		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
+		if(mirnaFile != null && mirnaFile.exists()) {
+			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);			
+		}
+		
+		
 		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
 		// tfw.writeStringToFile("[");
 
@@ -95,6 +125,16 @@ public class GeneParser {
 			geneId = gtf.getAttributes().get("gene_id");
 			transcriptId = gtf.getAttributes().get("transcript_id");
 
+			/*
+			 * If chromosome is changed (or it's the first chromosome
+			 * we load the chromosome sequence.
+			 */
+			if(!chromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
+				chromosome = gtf.getSequenceName();
+//				chromSequence = getSequenceByChromosome(chromosome, genomeSequenceFile.toPath());
+				chromSequence = getSequenceByChromosomeName(chromosome, genomeSequenceFile);
+			}
+			
 			// Check if gene exist en Map
 			if (gene == null || !geneId.equals(gene.getId())) { // !geneDict.containsKey(geneId)
 				if (gene != null) { // genes.size()>0
@@ -109,7 +149,7 @@ public class GeneParser {
 
 				gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
 						"KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
-						gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>());
+						gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(), mirnaGeneMap.get(geneId));
 				// genes.add(gene);
 
 				// Do not change order!! size()-1 is the index of the gene ID
@@ -120,7 +160,7 @@ public class GeneParser {
 			if (!transcriptDict.containsKey(transcriptId)) {
 				transcript = new Transcript(transcriptId, gtf.getAttributes().get("transcript_name"), gtf.getSource(),
 						"KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
-						gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>());
+						gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), tfbsMap.get(transcriptId));
 				gene.getTranscripts().add(transcript);
 				// Do not change order!! size()-1 is the index of the transcript
 				// ID
@@ -136,9 +176,15 @@ public class GeneParser {
 			updateTranscriptAndGeneCoords(transcript, gene, gtf);
 
 			if (gtf.getFeature().equalsIgnoreCase("exon")) {
+				// Obtaining the exon sequence
+				exonSequence = "";					
+				if(chromosome.equals(gtf.getSequenceName()) && chromSequence.length() > 0) {
+					// as starts is inclusive and position begins in 1 we must -1, end is OK.
+					exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
+				}
 				exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
 						gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
-								.getAttributes().get("exon_number")));
+								.getAttributes().get("exon_number")), exonSequence);
 				transcript.getExons().add(exon);
 				exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
 				if (gtf.getAttributes().get("exon_number").equals("1")) {
@@ -300,6 +346,10 @@ public class GeneParser {
 			}
 		}
 
+		// last gene must be written
+		tfw.writeStringToFile("\n");
+		tfw.writeStringToFile(gson.toJson(gene));
+		
 		// tfw.writeStringToFile("]");
 		// tfw.writeLine("\n");
 
@@ -323,6 +373,95 @@ public class GeneParser {
 		}
 	}
 
+	public String getSequenceByChromosomeName(String chrom, File genomeSequenceDir) throws IOException {
+		File[] files = genomeSequenceDir.listFiles();
+		File file = null;
+		for(File f: files) {
+			if(f.getName().endsWith("_"+chrom+".fa.gz") || f.getName().endsWith("."+chrom+".fa.gz")) {
+				System.out.println(f.getAbsolutePath());
+				file = f;
+				break;
+			}
+		}
+		StringBuilder sb = new StringBuilder(100000);
+		if(file != null) {
+	//		BufferedReader br = Files.newBufferedReader(files[0].toPath(), Charset.defaultCharset());
+			BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
+			String line = "";
+			boolean found = false;
+			while((line = br.readLine()) != null) {
+				if(found) {
+					if(!line.startsWith(">")) {
+						sb.append(line);
+					}else {
+						break;
+					}
+				}
+				if(line.startsWith(">")) {
+					found = true;
+				}
+			}
+			br.close();
+		}
+		return sb.toString();
+	}
+	
+	public String getSequenceByChromosome(String chrom, Path genomeSequenceFile) throws IOException {
+		BufferedReader br = Files.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
+		StringBuilder sb = new StringBuilder(100000);
+		String line = "";
+		boolean found = false;
+		while((line = br.readLine()) != null) {
+			if(found) {
+				if(!line.startsWith(">")) {
+					sb.append(line);
+				}else {
+					break;
+				}
+			}
+			if(line.startsWith(">"+chrom+" ")) {
+				found = true;
+			}
+		}
+		br.close();
+		return sb.toString();
+	}
+	
+	private Map<String, MiRNAGene> getmiRNAGeneMap(File mirnaGeneFile) throws IOException {
+		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>(3000);
+		BufferedReader br = Files.newBufferedReader(mirnaGeneFile.toPath(), Charset.defaultCharset());
+		String line = "";
+		String[] fields, mirnaMatures, mirnaMaturesFields;
+		List<String> aliases;
+		MiRNAGene miRNAGene;
+		while((line = br.readLine()) != null) {
+			fields = line.split("\t");
+			
+			// First, read aliases of miRNA, field #5
+			aliases = new ArrayList<>();
+			for(String alias: fields[5].split(",")) {
+				aliases.add(alias);
+			}
+			
+			miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<MiRNAMature>());
+			
+			// Second, read the miRNA matures, field #6
+			mirnaMatures = fields[6].split(",");
+			for(String s: mirnaMatures) {
+				System.out.println(s);
+				mirnaMaturesFields = s.split("\\|");
+				System.out.println("\t"+Arrays.toString(mirnaMaturesFields));
+				// Save directly into MiRNAGene object.
+				miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);	
+			}
+			
+			// Add object to Map<EnsemblID, MiRNAGene>
+			mirnaGeneMap.put(fields[0], miRNAGene);
+		}
+		br.close();
+		return mirnaGeneMap;
+	}
+	
 	public void parseGff3ToJson(File getFile, File geneDescriptionFile, File xrefsFile, File outJsonFile)
 			throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
 
@@ -466,7 +605,7 @@ public class GeneParser {
 
 				name = group[1].split("=")[1];
 				Gene g = new Gene(id, name, "", "", chromosome, start, end, strand, "JGI", "",
-						new ArrayList<Transcript>());
+						new ArrayList<Transcript>(), null);
 				// g.setTranscripts(new ArrayList<Transcript>());
 				// g.setId(id);
 				// g.setBiotype("");
