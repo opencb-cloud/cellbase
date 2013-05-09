@@ -209,7 +209,7 @@ public class RegulatoryParser {
 
         StringBuilder sbQuery = new StringBuilder();
         sbQuery.append("CREATE TABLE if not exists " + tableName + "(");
-        for (int i = 0; i < columnNames.size(); i++) {//columnNames and columnTypes must have same size
+        for (int i = 0; i < columnNames.size(); i++) {	//columnNames and columnTypes must have the same size
             sbQuery.append("'" + columnNames.get(i) + "' " + columnTypes.get(i) + ",");
         }
         sbQuery.deleteCharAt(sbQuery.length() - 1);

@@ -54,9 +54,9 @@ public class GeneParser {
 		exonDict = new HashMap<>(8000000);
 	}
 
-	public void parseToJson(File getFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceFile, File outJsonFile)
+	public void parseToJson(File gtfFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceDir, File outJsonFile)
 			throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
-		FileUtils.checkFile(getFile);
+		FileUtils.checkFile(gtfFile);
 		init();
 
 		String geneId;
@@ -118,7 +118,7 @@ public class GeneParser {
 		// BasicBSONList list = new BasicBSONList();
 		int cont = 0;
 		Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
-		GtfReader gtfReader = new GtfReader(getFile);
+		GtfReader gtfReader = new GtfReader(gtfFile);
 		Gtf gtf;
 		boolean first = false;
 		while ((gtf = gtfReader.read()) != null) {
@@ -132,7 +132,7 @@ public class GeneParser {
 			if(!chromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
 				chromosome = gtf.getSequenceName();
 //				chromSequence = getSequenceByChromosome(chromosome, genomeSequenceFile.toPath());
-				chromSequence = getSequenceByChromosomeName(chromosome, genomeSequenceFile);
+				chromSequence = getSequenceByChromosomeName(chromosome, genomeSequenceDir);
 			}
 			
 			// Check if gene exist en Map

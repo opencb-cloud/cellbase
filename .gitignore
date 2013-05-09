@@ -3,5 +3,6 @@ target*
 .project
 .settings/*
 installation-dir/libs/*
+*.jar
 .pydevproject
 *.iml
