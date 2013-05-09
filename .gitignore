@@ -1,6 +1,8 @@
 target*
 .classpath
+.project
 .settings/*
 installation-dir/libs/*
+*.jar
 .pydevproject
-.project
+*.iml

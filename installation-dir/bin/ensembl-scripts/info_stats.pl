@@ -18,7 +18,7 @@ my $help = '0';
 ####################################################################
 ## Parsing command line options ####################################
 ####################################################################
-# USAGE: ./variation.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
+# USAGE: ./info_stats.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'o|outdir=s' => \$outdir, 'trans-file|transcript-file=s' => \$transcript_file,
