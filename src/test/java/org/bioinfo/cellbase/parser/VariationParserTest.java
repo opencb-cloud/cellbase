@@ -6,7 +6,8 @@ public class VariationParserTest {
 
 	@Test
 	public void test() {
-		new VariationParser();
+		System.out.println("--->");
+		new VariationParser("/home/echirivella/homo_sapiens_71_37");
 	}
 
 }
