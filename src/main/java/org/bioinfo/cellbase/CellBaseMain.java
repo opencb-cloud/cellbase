@@ -2,6 +2,8 @@ package org.bioinfo.cellbase;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -11,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.bioinfo.cellbase.parser.GeneParser;
 import org.bioinfo.cellbase.parser.GenomeSequenceFastaParser;
+import org.bioinfo.cellbase.parser.RegulatoryParser;
 import org.bioinfo.formats.exception.FileFormatException;
 
 public class CellBaseMain {
@@ -43,6 +46,8 @@ public class CellBaseMain {
 		options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
+		
+		options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
 		
 		options.addOption(OptionFactory.createOption("species", "s",  "Sapecies...", false, true));
 		
@@ -89,6 +94,20 @@ public class CellBaseMain {
 						GeneParser geneParser = new GeneParser();
 						geneParser.parseToJson(new File(gtfFile), new File(geneDescriptionFile), new File(xrefFile), new File(tfbsFile), new File(mirnaFile), new File(genomeSequenceDir),  new File(outfile));
 					} catch (SecurityException | NoSuchMethodException | FileFormatException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			if(buildOption.equals("regulation")) {
+				System.out.println("In regulation");
+				String indir = commandLine.getOptionValue("indir");
+				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
+				if(indir != null) {
+					try {
+						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), 0, Paths.get(outfile));
+					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
 						e.printStackTrace();
 					}
 				}
