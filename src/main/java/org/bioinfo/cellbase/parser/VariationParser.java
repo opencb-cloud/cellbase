@@ -86,7 +86,7 @@ public class VariationParser {
 //		this.FindAndLoadFiles(new File(path));
 		//this.CoreVariationParser();
 		
-		BufferedReader br = null;
+//		BufferedReader br = null;
 		File[] myFiles = variationGzipPath.toFile().listFiles();
 		for (File file: myFiles) {
 
