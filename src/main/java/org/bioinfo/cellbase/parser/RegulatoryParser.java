@@ -115,24 +115,29 @@ public class RegulatoryParser {
 //		List<GenericFeature> regulatoryGenericFeatures = new ArrayList<>();
 //		List<GenericFeature> mirnaGenericFeatures = new ArrayList<>();
 
-
 		Map<Integer, GenericFeatureChunk> genericFeatureChunks = null;
 		for (String chromosome : chromosomes) {
 
 			for (int i=0; i<tableNames.size(); i++) {
 				genericFeatureChunks = new HashMap<>();
 				genericFeatures = RegulatoryParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
-				for(GenericFeature genericFeature: genericFeatures){
+				int c = 0;
+				for(GenericFeature genericFeature: genericFeatures) {
 					int firstChunkId =  getChunkId(genericFeature.getStart(), chunksize);
 					int lastChunkId  = getChunkId(genericFeature.getEnd(), chunksize);
-					
-					for(int j=firstChunkId; j<=lastChunkId; j++){
-						if(genericFeatureChunks.get(j)==null){
+
+					// remove 'chr' prefix
+					if(genericFeature.getChromosome() != null) {
+						genericFeature.setChromosome(genericFeature.getChromosome().replace("chr", ""));						
+					}else {
+						System.out.println((++c)+" => "+genericFeature.getChromosome()+":"+genericFeature.getStart()+"   "+genericFeature.getId()+" => "+chromosome+" "+genericFeatures.size()+"  "+tableNames.get(i));
+					}
+					for(int j=firstChunkId; j<=lastChunkId; j++) {
+						if(genericFeatureChunks.get(j)==null) {
 							int chunkStart = getChunkStart(j, chunksize);
 							int chunkEnd = getChunkEnd(j, chunksize);
 							genericFeatureChunks.put(j, new GenericFeatureChunk(chromosome, j, chunkStart, chunkEnd, new ArrayList<GenericFeature>()));
 						}
-						genericFeature.setChromosome(genericFeature.getChromosome().replace("chr", ""));
 						genericFeatureChunks.get(j).getFeatures().add(genericFeature);
 					}
 				}
@@ -265,14 +270,15 @@ public class RegulatoryParser {
 		while ((line = br.readLine()) != null) {
 
 			insertByType(ps, getFields(line, tableName), columnTypes);
+			ps.addBatch();
+			BatchCount++;
 
 			//commit batch
 			if (BatchCount % LIMITROWS == 0 && BatchCount != 0) {
 				ps.executeBatch();
 				conn.commit();
 			}
-			ps.addBatch();
-			BatchCount++;
+			
 		}
 		br.close();
 
@@ -396,15 +402,17 @@ public class RegulatoryParser {
 		//   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
 		GenericFeature genericFeature = new GenericFeature();
 		Map<String, String> groupFields = getGroupFields(rs.getString(9));
-		rs.getString(1);
-		rs.getString(2);
-		rs.getString(3);
-		rs.getInt(4);
-		rs.getInt(5);
-		rs.getString(6);
-		rs.getString(7);
-		rs.getString(8);
-		rs.getString(9);
+		
+		genericFeature.setChromosome(rs.getString(1));
+		genericFeature.setSource(rs.getString(2));
+		genericFeature.setFeatureType(rs.getString(3));
+		genericFeature.setStart(rs.getInt(4));
+		genericFeature.setEnd(rs.getInt(5));
+		genericFeature.setScore(rs.getString(6));
+		genericFeature.setStrand(rs.getString(7));
+		genericFeature.setFrame(rs.getString(8));
+		genericFeature.setFrame(rs.getString(9));
+		
 		return genericFeature;
 	}
 

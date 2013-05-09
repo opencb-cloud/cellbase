@@ -103,10 +103,25 @@ public class CellBaseMain {
 				System.out.println("In regulation");
 				String indir = commandLine.getOptionValue("indir");
 				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
+				System.out.println("chunksize: "+chunksize);
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
 				if(indir != null) {
 					try {
-						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), 0, Paths.get(outfile));
+						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
+					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			if(buildOption.equals("conservation")) {
+				System.out.println("In conservation");
+				String indir = commandLine.getOptionValue("indir");
+				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/conservation.json");
+				if(indir != null) {
+					try {
+						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
 					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
 						e.printStackTrace();
 					}
