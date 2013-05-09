@@ -16,6 +16,7 @@ import org.bioinfo.cellbase.parser.ConservedRegionParser;
 import org.bioinfo.cellbase.parser.GeneParser;
 import org.bioinfo.cellbase.parser.GenomeSequenceFastaParser;
 import org.bioinfo.cellbase.parser.RegulatoryParser;
+import org.bioinfo.cellbase.parser.VariationParser;
 import org.bioinfo.formats.exception.FileFormatException;
 
 public class CellBaseMain {
@@ -108,11 +109,7 @@ public class CellBaseMain {
 				System.out.println("chunksize: "+chunksize);
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
 				if(indir != null) {
-					try {
-						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
-					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
-						e.printStackTrace();
-					}
+					new VariationParser(indir);
 				}
 			}
 			

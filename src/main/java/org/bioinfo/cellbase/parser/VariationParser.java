@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,14 +22,13 @@ import java.util.zip.GZIPInputStream;
 
 public class VariationParser {
 
-	private BufferedReader br = null;
 	private String readLine = null;
 	private File path = null;
 
+	private BufferedReader br = null;
+	
 	private int LIMITROWS = 1500000;
 	private Boolean indexed = true;
-
-	private List<String> files = new ArrayList<String>();
 
 	private Map<String, String> seqRegion = new HashMap<String, String>();
 	private Map<String, String> source = new HashMap<String, String>();
@@ -36,63 +36,65 @@ public class VariationParser {
 	private Map<String, String> study = new HashMap<String, String>();
 	private Map<String, String> alleleCode = new HashMap<String, String>();
 
-	Connection conndb1 = null;
-	Connection conndb2 = null;
+	static Connection conndb1 = null;
+//	Connection conndb2 = null;
 
 	public VariationParser(String path) {
 
+
+	}
+
+	public void createaSQLiteDatabase(Path variationGzipPath) {
 		try {
-			this.path = new File(path);
+//			this.path = new File(path);
 			Class.forName("org.sqlite.JDBC");
-			conndb1 = DriverManager.getConnection("jdbc:sqlite:mydb1.db");
+			conndb1 = DriverManager.getConnection("jdbc:sqlite:"+variationGzipPath.toAbsolutePath().toString()+"/variation.db");
 			conndb1.setAutoCommit(false);
-			conndb2 = DriverManager.getConnection("jdbc:sqlite:mydb2.db");
-			conndb2.setAutoCommit(false);
+//			conndb2 = DriverManager.getConnection("jdbc:sqlite:mydb2.db");
+//			conndb2.setAutoCommit(false);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
+		List<String> filenames = new ArrayList<String>(20);
+		filenames.add("allele_code.txt.gz");
+		filenames.add("genotype_code.txt.gz");
+		filenames.add("motif_feature.txt.gz");
+		filenames.add("motif_feature_variation.txt.gz");
+		//		filenames.add("population_genotype.txt.gz");
+		filenames.add("sample.txt.gz");
+		//		filenames.add("variation_annotation.txt.gz");
 
-		files.add("allele_code.txt.gz");
-		files.add("genotype_code.txt.gz");
-		files.add("motif_feature.txt.gz");
-		files.add("motif_feature_variation.txt.gz");
-//		files.add("population_genotype.txt.gz");
-		files.add("sample.txt.gz");
-//		files.add("variation_annotation.txt.gz");
+		//		filenames.add("allele.txt.gz");
+		//		filenames.add("transcript_variation.txt.gz");
 
-//		files.add("allele.txt.gz");
-//		files.add("transcript_variation.txt.gz");
-
-		files.add("phenotype.txt.gz");
-//		files.add("variation_feature.txt.gz");
-//		files.add("variation_synonym.txt.gz");
-//		files.add("variation.txt.gz");
-//		files.add("seq_region.txt.gz");
-//		files.add("source.txt.gz");
-//		files.add("study.txt.gz");
+		filenames.add("phenotype.txt.gz");
+		//		filenames.add("variation_feature.txt.gz");
+		//		filenames.add("variation_synonym.txt.gz");
+		//		filenames.add("variation.txt.gz");
+		//		filenames.add("seq_region.txt.gz");
+		//		filenames.add("source.txt.gz");
+		//		filenames.add("study.txt.gz");
 
 		// this.loadHashSeqRegion();
 		// this.loadHashSource();
 		// this.loadHashPhenotype();
 		// this.loadHashStudy();
 		// this.loadHashAlleleCode();
-		this.FindAndLoadFiles(new File(path));
+//		this.FindAndLoadFiles(new File(path));
 		//this.CoreVariationParser();
-	}
+		
+		BufferedReader br = null;
+		File[] myFiles = variationGzipPath.toFile().listFiles();
+		for (File file: myFiles) {
 
-	private void FindAndLoadFiles(File path) {
-		File[] myFiles = path.listFiles();
-		for (File file : myFiles) {
-
-			if (files.contains(file.getName())) {
+			if (filenames.contains(file.getName())) {
 				try {
-
 					System.out.println("Load File" + file.getName());
-
-					br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(Paths.get(
-							path.toString(), file.getName()).toFile()))));
+					br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(variationGzipPath.resolve(file.toPath()).toFile()))));
+//					Paths.get(variationGzipFiles.toString(), file.getName()).toFile()))));
 
 					switch (file.getName()) {
 					case "allele_code.txt.gz":
@@ -151,8 +153,8 @@ public class VariationParser {
 				}
 			}
 		}
-
 	}
+
 
 	private void loadHashAlleleCode() {
 		try {
@@ -341,7 +343,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 					acum += tExecBatchTotal;
 					conndb1.commit();
 				}
@@ -394,12 +396,12 @@ public class VariationParser {
 		long tExecIndexTotal;
 
 		try {
-			Statement createTables = conndb2.createStatement();
+			Statement createTables = conndb1.createStatement();
 			createTables.executeUpdate("CREATE TABLE if not exists source("
 					+ "source_id INT ," // INDEX
 					+ "name TEXT, " + "version INT, " + "description TEXT," + "url TEXT," + "type TEXT,"
 					+ "somatic_status TEXT)");
-			PreparedStatement ps = conndb2.prepareStatement("INSERT INTO source("
+			PreparedStatement ps = conndb1.prepareStatement("INSERT INTO source("
 					+ "source_id," // INDEX
 					+ "name, " + "version, " + "description," + "url," + "type," + "somatic_status)"
 					+ "values (?,?,?,?,?,?,?)");
@@ -460,10 +462,10 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
-					conndb2.commit();
+					conndb1.commit();
 				}
 
 				ps.addBatch();
@@ -477,7 +479,7 @@ public class VariationParser {
 
 			acum += tExecBatchTotal;
 			System.out.println("Time TotalBatch source: " + TimeUnit.NANOSECONDS.toSeconds(acum));
-			conndb2.commit();
+			conndb1.commit();
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables.executeUpdate("CREATE INDEX source_id_source on source(source_id)");
@@ -534,7 +536,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -643,7 +645,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -725,7 +727,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -809,7 +811,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -889,7 +891,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -914,7 +916,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX genotype_code_id_genotypecode on genotype_code(genotype_code_id)");
+				.executeUpdate("CREATE INDEX genotype_code_id_genotypecode on genotype_code(genotype_code_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1007,7 +1009,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1032,7 +1034,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_id_populationgenotype on population_genotype(variation_id)");
+				.executeUpdate("CREATE INDEX variation_id_populationgenotype on population_genotype(variation_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1102,7 +1104,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1127,7 +1129,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_feature_id_motiffeaturevariation on motif_feature_variation(variation_feature_id)");
+				.executeUpdate("CREATE INDEX variation_feature_id_motiffeaturevariation on motif_feature_variation(variation_feature_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1158,7 +1160,7 @@ public class VariationParser {
 
 		try {
 
-			Statement createTables = conndb2.createStatement();
+			Statement createTables = conndb1.createStatement();
 
 			createTables.executeUpdate("CREATE TABLE if not exists allele(" 
 					+ "variation_id INT ,"
@@ -1167,7 +1169,7 @@ public class VariationParser {
 					+ "frequency REAL, " 
 					+ "count INT)");
 
-			PreparedStatement ps = conndb2.prepareStatement("INSERT INTO allele(" + "variation_id,"
+			PreparedStatement ps = conndb1.prepareStatement("INSERT INTO allele(" + "variation_id,"
 					+ "allele_code_id, " + "sample_id, " + "frequency, " + "count)" + "values (?,?,?,?,?)");
 
 			while ((readLine = br.readLine()) != null) {
@@ -1202,7 +1204,7 @@ public class VariationParser {
 								+ TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 						acum += tExecBatchTotal;
-						conndb2.commit();
+						conndb1.commit();
 					}
 
 					ps.addBatch();
@@ -1220,7 +1222,7 @@ public class VariationParser {
 
 			acum += tExecBatchTotal;
 			System.out.println("Time TotalBatch allele: " + TimeUnit.NANOSECONDS.toSeconds(acum));
-			conndb2.commit();
+			conndb1.commit();
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables.executeUpdate("CREATE INDEX variation_id_allele on allele(variation_id)");
@@ -1234,9 +1236,9 @@ public class VariationParser {
 		}
 	}
 
-	
+
 	private void sql_motifFeature(){
-		
+
 	}
 	private void motifFeature() {
 
@@ -1300,7 +1302,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1325,7 +1327,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX motif_feature_id_motiffeature on motif_feature(motif_feature_id)");
+				.executeUpdate("CREATE INDEX motif_feature_id_motiffeature on motif_feature(motif_feature_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1391,7 +1393,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1416,7 +1418,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_id_variationsynonim on variation_synonim(variation_id)");
+				.executeUpdate("CREATE INDEX variation_id_variationsynonim on variation_synonim(variation_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1517,7 +1519,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1542,7 +1544,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_id_variationannotation on variation_annotation(variation_id)");
+				.executeUpdate("CREATE INDEX variation_id_variationannotation on variation_annotation(variation_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1738,7 +1740,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1763,7 +1765,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_feature_id_transcriptvariation on transcript_variation(variation_feature_id)");
+				.executeUpdate("CREATE INDEX variation_feature_id_transcriptvariation on transcript_variation(variation_feature_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1873,7 +1875,7 @@ public class VariationParser {
 					tExecBatchFin = System.nanoTime();
 					tExecBatchTotal = tExecBatchFin - tExecBatch;
 					System.out
-							.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
+					.println(contador + " ---> Time Batch: " + TimeUnit.NANOSECONDS.toMillis(tExecBatchTotal));
 
 					acum += tExecBatchTotal;
 					conndb1.commit();
@@ -1898,7 +1900,7 @@ public class VariationParser {
 			tExecIndex = System.nanoTime();
 			if (indexed)
 				createTables
-						.executeUpdate("CREATE INDEX variation_id_variationfeature on variation_feature(variation_id)");
+				.executeUpdate("CREATE INDEX variation_id_variationfeature on variation_feature(variation_id)");
 			tExecIndexFin = System.nanoTime();
 			tExecIndexTotal = tExecIndexFin - tExecIndex;
 			acum += tExecIndexTotal;
@@ -1934,7 +1936,7 @@ public class VariationParser {
 		double frequency;
 		int sample_id;
 		int count;
-		
+
 		try {
 			Statement pst = conndb1.createStatement();
 			ResultSet rs = pst.executeQuery("select * from population_genotype where variation_id='" + Integer.parseInt(variation_id) + "'");
@@ -1950,7 +1952,7 @@ public class VariationParser {
 		}
 
 	}
-	
+
 	private void sql_variation_feature(String variation_id) {
 		System.out.println("Consultando variation_feature: " + variation_id);
 		int variation_feature_id;
@@ -1995,7 +1997,7 @@ public class VariationParser {
 	private void sql_genotype_code(String genotype_code_id){
 		int allele_code_id;
 		int haplotype_id;
-		
+
 		try {
 			Statement pst = conndb1.createStatement();
 			ResultSet rs = pst.executeQuery("select * from genotype_code where genotype_code_id='" + Integer.parseInt(genotype_code_id) + "'");
@@ -2007,10 +2009,10 @@ public class VariationParser {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void sql_allele_code(String allele_code_id){
 		int allele;
-		
+
 		try {
 			Statement pst = conndb1.createStatement();
 			ResultSet rs = pst.executeQuery("select * from allele_code where allele_code_id='" + Integer.parseInt(allele_code_id) + "'");
@@ -2021,11 +2023,11 @@ public class VariationParser {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void sql_variation_synonim(String variation_id){
 		int source_id; 
 		String name;
-		
+
 		try {
 			Statement pst = conndb1.createStatement();
 			ResultSet rs = pst.executeQuery("select * from variation_synonim where variation_id='" + Integer.parseInt(variation_id) + "'");
@@ -2037,7 +2039,7 @@ public class VariationParser {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
+
+
+
 }
