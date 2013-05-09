@@ -109,7 +109,8 @@ public class CellBaseMain {
 				System.out.println("chunksize: "+chunksize);
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
 				if(indir != null) {
-					new VariationParser(indir);
+					VariationParser vp = new VariationParser();
+					vp.createaSQLiteDatabase(Paths.get(indir));
 				}
 			}
 			

@@ -39,7 +39,7 @@ public class VariationParser {
 	static Connection conndb1 = null;
 //	Connection conndb2 = null;
 
-	public VariationParser(String path) {
+	public VariationParser() {
 
 
 	}
