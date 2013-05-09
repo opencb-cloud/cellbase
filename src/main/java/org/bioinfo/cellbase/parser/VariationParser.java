@@ -92,7 +92,7 @@ public class VariationParser {
 
 			if (filenames.contains(file.getName())) {
 				try {
-					System.out.println("Load File" + file.getName());
+					System.out.println("Load File: " + variationGzipPath.resolve(file.toPath()).toFile());
 					br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(variationGzipPath.resolve(file.toPath()).toFile()))));
 //					Paths.get(variationGzipFiles.toString(), file.getName()).toFile()))));
 
