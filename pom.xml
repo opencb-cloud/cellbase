@@ -90,7 +90,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.bioinfo.cellbase.CellbaseMain</mainClass>
+							<mainClass>org.bioinfo.cellbase.CellBaseMain</mainClass>
 							<addClasspath>true</addClasspath>
 						</manifest>
 					</archive>

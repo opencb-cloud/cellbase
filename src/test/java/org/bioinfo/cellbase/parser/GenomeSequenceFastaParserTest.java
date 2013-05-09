@@ -20,7 +20,10 @@ public class GenomeSequenceFastaParserTest {
 //    @Test
     public void testParseToJson() {
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
-        genomeSequenceFastaParser.parseToJson(new File(USER_HOME + "/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.68.fasta"), new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence.json"));
+//        genomeSequenceFastaParser.parseToJson(new File(USER_HOME + "/cellbase_v3/hsapiens/Homo_sapiens.GRCh37.71.fasta"), new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence.json"));
+        
+        
+        genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(USER_HOME + "/cellbase_v3/hsapiens/sequence/"), new File(USER_HOME + "/cellbase_v3/hsapiens/hsapiens_genome_sequence_new.json"));
 //		fail("Not yet implemented");
     }
 
