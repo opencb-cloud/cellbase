@@ -19,7 +19,7 @@ public class ConservedRegionParser {
 	private static int CHUNKSIZE = 2000;
 	static Gson gson = new Gson();
 
-    public static void parseConservedRegionFilesToJson(Path conservedRegionPath, Path outdirPath, int chunksize) throws IOException {
+    public static void parseConservedRegionFilesToJson(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
         Path inGzPath;
         Path outJsonPath;
 

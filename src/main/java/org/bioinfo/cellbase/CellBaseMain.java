@@ -2,6 +2,7 @@ package org.bioinfo.cellbase;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.bioinfo.cellbase.parser.ConservedRegionParser;
 import org.bioinfo.cellbase.parser.GeneParser;
 import org.bioinfo.cellbase.parser.GenomeSequenceFastaParser;
 import org.bioinfo.cellbase.parser.RegulatoryParser;
@@ -21,24 +23,24 @@ public class CellBaseMain {
 	private static Options options;
 	private static CommandLine commandLine;
 	private static CommandLineParser parser;
-	
+
 	private Logger logger;
-	
+
 	static {
 		parser = new PosixParser();
 	}
-	
+
 	public CellBaseMain() {
 		initOptions();
 	}
-	
+
 	private static void initOptions() {
 		options = new Options();
 		options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
 		options.addOption(OptionFactory.createOption("indir", "i",  "Input directory with data files", false));
 		options.addOption(OptionFactory.createOption("outdir", "o",  "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("outfile", "Output directory to save the JSON result", false));
-		
+
 		// Core options
 		options.addOption(OptionFactory.createOption("gtf-file", "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("gene-description", "Output directory to save the JSON result", false));
@@ -46,14 +48,14 @@ public class CellBaseMain {
 		options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
 		options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
-		
+
 		options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
-		
+
 		options.addOption(OptionFactory.createOption("species", "s",  "Sapecies...", false, true));
-		
+
 		options.addOption(OptionFactory.createOption("log-level", "DEBUG -1, INFO -2, WARNING - 3, ERROR - 4, FATAL - 5", false));
 	}
-	
+
 	/**
 	 * @param args
 	 */
@@ -62,14 +64,14 @@ public class CellBaseMain {
 		try {
 			parse(args, false);
 			String buildOption = null;
-			
+
 			// no needed to check as 'build' arg is required in Options
 			if(!commandLine.hasOption("build") || commandLine.getOptionValue("build").equals("")) {
-				
+
 			}
-			
+
 			buildOption = commandLine.getOptionValue("build");
-			
+
 			if(buildOption.equals("genome-sequence")) {
 				System.out.println("In genome-sequence");
 				String indir = commandLine.getOptionValue("indir");
@@ -79,7 +81,7 @@ public class CellBaseMain {
 					genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(indir), new File(outfile));
 				}
 			}
-			
+
 			if(buildOption.equals("core")) {
 				System.out.println("In core");
 				String gtfFile = commandLine.getOptionValue("gtf-file");
@@ -94,6 +96,21 @@ public class CellBaseMain {
 						GeneParser geneParser = new GeneParser();
 						geneParser.parseToJson(new File(gtfFile), new File(geneDescriptionFile), new File(xrefFile), new File(tfbsFile), new File(mirnaFile), new File(genomeSequenceDir),  new File(outfile));
 					} catch (SecurityException | NoSuchMethodException | FileFormatException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			if(buildOption.equals("variation")) {
+				System.out.println("In variation");
+				String indir = commandLine.getOptionValue("indir");
+				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
+				System.out.println("chunksize: "+chunksize);
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
+				if(indir != null) {
+					try {
+						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
+					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
 						e.printStackTrace();
 					}
 				}
@@ -113,41 +130,37 @@ public class CellBaseMain {
 					}
 				}
 			}
-			
+
 			if(buildOption.equals("conservation")) {
 				System.out.println("In conservation");
 				String indir = commandLine.getOptionValue("indir");
 				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/conservation.json");
 				if(indir != null) {
-					try {
-						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
-					} catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
-						e.printStackTrace();
-					}
+					ConservedRegionParser.parseConservedRegionFilesToJson(Paths.get(indir), chunksize,  Paths.get(outfile));
 				}
 			}
 
 		} catch (ParseException | IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
 		parser = new PosixParser();
 		commandLine = parser.parse(options, args, stopAtNoOption);
 
-//		if(commandLine.hasOption("outdir")) {
-//			this.outdir = commandLine.getOptionValue("outdir");
-//		}
-//		if(commandLine.hasOption("log-level")) {
-//			logger.setLevel(Integer.parseInt(commandLine.getOptionValue("log-level")));
-//		}
-		
+		//		if(commandLine.hasOption("outdir")) {
+		//			this.outdir = commandLine.getOptionValue("outdir");
+		//		}
+		//		if(commandLine.hasOption("log-level")) {
+		//			logger.setLevel(Integer.parseInt(commandLine.getOptionValue("log-level")));
+		//		}
+
 		if(args.length > 0 && "variation".equals(args[1])) {
 			System.out.println("variation SQL test");
 		}
 	}
-	
+
 }

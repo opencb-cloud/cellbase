@@ -16,7 +16,7 @@ public class ConservedRegionParserTest {
     public void testConservedRegions() throws IOException {
         Path indir = Paths.get(USER_HOME + "/cellbase_v3","hsapiens","conservation");
         Path outdir = Paths.get(USER_HOME + "/cellbase_v3","hsapiens","conservation");
-        ConservedRegionParser.parseConservedRegionFilesToJson(indir,outdir,2000);
+        ConservedRegionParser.parseConservedRegionFilesToJson(indir, 2000, outdir);
     }
 
 }
