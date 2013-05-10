@@ -13,7 +13,8 @@ public class Variation {
 	private String strand; 			//4
 	private String type; 
 	private String reference;
-	private String alternate; 
+	private String alternate;
+	private String alleleString;
 
 	private String species; 
 	private String assembly;
@@ -35,7 +36,7 @@ public class Variation {
 	// private String variantSeSeq;
 	// private String variantReads;
 	private String variantFreq;
-	private String validationStates;
+	private String validationStatus;
 
 	// private List<String> variantEffect
 
@@ -43,10 +44,10 @@ public class Variation {
 	}
 
 	public Variation(String name, String chromosome, String type, int start, int end, String strand, String reference,
-			String alternate, String species, String assembly, String source, String version,
-			List<SampleGenotype> samples, List<TranscriptVariation> consequenceTypes,
+			String alternate, String alleleString, String species, String assembly, String source, String version,
+			List<SampleGenotype> samples, List<TranscriptVariation> transcriptVariations,
 			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String featureAlias,
-			String variantFreq, String validationStates) {
+			String variantFreq, String validationStatus) {
 		this.name = name;
 		this.chromosome = chromosome;
 		this.type = type;
@@ -55,19 +56,21 @@ public class Variation {
 		this.strand = strand;
 		this.reference = reference;
 		this.alternate = alternate;
+		this.alleleString = alleleString;
 		this.species = species;
 		this.assembly = assembly;
 		this.source = source;
 		this.version = version;
 		this.samples = samples;
-		this.transcriptVariations = consequenceTypes;
+		this.transcriptVariations = transcriptVariations;
 		this.populationFrequencies = populationFrequencies;
 		this.xrefs = xrefs;
 		this.featureId = featureId;
 		this.featureAlias = featureAlias;
 		this.variantFreq = variantFreq;
-		this.validationStates = validationStates;
+		this.validationStatus = validationStatus;
 	}
+
 
 	public String getSpecies() {
 		return species;
@@ -198,11 +201,11 @@ public class Variation {
 	}
 
 	public String getValidationStates() {
-		return validationStates;
+		return validationStatus;
 	}
 
-	public void setValidationStates(String validationStates) {
-		this.validationStates = validationStates;
+	public void setValidationStates(String validationStatus) {
+		this.validationStatus = validationStatus;
 	}
 
 	public String getReference() {
@@ -235,6 +238,14 @@ public class Variation {
 
 	public void setXrefs(Xref xrefs) {
 		this.xrefs.add(xrefs);
+	}
+
+	public String getAlleleString() {
+		return alleleString;
+	}
+
+	public void setAlleleString(String alleleString) {
+		this.alleleString = alleleString;
 	}
 
 }

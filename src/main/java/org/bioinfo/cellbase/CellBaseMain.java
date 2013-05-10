@@ -2,9 +2,9 @@ package org.bioinfo.cellbase;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -76,7 +76,7 @@ public class CellBaseMain {
 			if(buildOption.equals("genome-sequence")) {
 				System.out.println("In genome-sequence");
 				String indir = commandLine.getOptionValue("indir");
-				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_sequence.json");
 				if(indir != null) {
 					GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
 					genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(indir), new File(outfile));
@@ -107,10 +107,20 @@ public class CellBaseMain {
 				String indir = commandLine.getOptionValue("indir");
 				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
 				System.out.println("chunksize: "+chunksize);
-				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/variation.json");
 				if(indir != null) {
 					VariationParser vp = new VariationParser();
-					vp.createaSQLiteDatabase(Paths.get(indir));
+					vp.createVariationDatabase(Paths.get(indir));
+					
+					vp.connect(Paths.get(indir));
+//					List<String> res = vp.queryByVariationId(13, "variation_synonym", Paths.get(indir));
+//					System.out.println("a");
+//					 res = vp.queryByVariationId(4, "variation_synonym", Paths.get(indir));
+//					System.out.println("b");
+//					res = vp.queryByVariationId(8, "variation_synonym", Paths.get(indir));
+//					System.out.println("c");
+					vp.parseVariationToJson("", "", "", "", Paths.get(indir), Paths.get(outfile));
+					vp.disconnect();
 				}
 			}
 			
@@ -139,7 +149,7 @@ public class CellBaseMain {
 				}
 			}
 
-		} catch (ParseException | IOException e) {
+		} catch (ParseException | IOException | SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 

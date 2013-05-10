@@ -72,7 +72,7 @@ my $karyotype_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species,"core","Kar
 my $gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene");
 
 
-
+$species = ucfirst($species);
 $info_stats{'species'} = $species;
 
 

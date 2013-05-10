@@ -85,22 +85,22 @@ public class VariationParser_old {
 									switch (variantSeq[Integer
 											.parseInt(variantEffect[1])]) {
 									case "-":
-										variation[i]
-												.setConsequenceTypes(new TranscriptVariation(
-														variantEffect[0],
-														variantEffect[3], "-",
-														variantEffect[2]));
+//										variation[i]
+//												.setConsequenceTypes(new TranscriptVariation(
+//														variantEffect[0],
+//														variantEffect[3], "-",
+//														variantEffect[2]));
 										break;
 
 									default:
 
-										variation[i]
-												.setConsequenceTypes(new TranscriptVariation(
-														variantEffect[0],
-														variantEffect[3],
-														variantSeq[Integer
-																.parseInt(variantEffect[1])],
-														variantEffect[2]));
+//										variation[i]
+//												.setConsequenceTypes(new TranscriptVariation(
+//														variantEffect[0],
+//														variantEffect[3],
+//														variantSeq[Integer
+//																.parseInt(variantEffect[1])],
+//														variantEffect[2]));
 										break;
 									}
 								}
