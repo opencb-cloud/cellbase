@@ -11,6 +11,7 @@ import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -50,6 +51,7 @@ public class VariationParser {
 	public void parseVariationToJson(String species, String assembly, String source, String version, Path variationFilePath, Path outfileJson) throws IOException, SQLException {
 		BufferedReader br = Files.newBufferedReader(variationFilePath.resolve("variation.txt"), Charset.defaultCharset());
 		BufferedWriter bw = Files.newBufferedWriter(outfileJson, Charset.defaultCharset());
+		BufferedWriter bwLog = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+".log"), Charset.defaultCharset());
 		Gson gson = new Gson();
 		Map<String, List<String>> queryMap = null;
 		String[] variationFields = null;
@@ -137,15 +139,20 @@ public class VariationParser {
 					arr = new String[]{"", ""};
 				}
 				
-				variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" , seqRegionMap.get(variationFeatureFields[1]), "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], (arr[0] != null && !arr[0].equals("\\N")) ? arr[0] : "" , (arr[1] != null && !arr[1].equals("\\N")) ? arr[1] : "" , variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
+				try {
+					variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" , seqRegionMap.get(variationFeatureFields[1]), "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], (arr[0] != null && !arr[0].equals("\\N")) ? arr[0] : "" , (arr[1] != null && !arr[1].equals("\\N")) ? arr[1] : "" , variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
 
-//				System.out.println(gson.toJson(variation));
-//				sb.append(gson.toJson(variation)).append("\n");
-				countprocess++;
-				if(countprocess % 10000 == 0 && countprocess != 0){
-					System.out.println("llevamos procesados: " + countprocess);
+					//				System.out.println(gson.toJson(variation));
+					//				sb.append(gson.toJson(variation)).append("\n");
+					countprocess++;
+					if(countprocess % 10000 == 0 && countprocess != 0){
+						System.out.println("llevamos procesados: " + countprocess);
+					}
+					bw.write(gson.toJson(variation)+ "\n");
+				}catch(ArrayIndexOutOfBoundsException e) {
+					e.printStackTrace();
+					bwLog.write(line+"\n");
 				}
-				bw.write(gson.toJson(variation)+ "\n");
 //					sb = new StringBuffer();
 //				}
 			}
@@ -157,6 +164,7 @@ public class VariationParser {
 		}
 		br.close();
 		bw.close();
+		bwLog.close();
 	}
 	
 	public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException, FileNotFoundException {
