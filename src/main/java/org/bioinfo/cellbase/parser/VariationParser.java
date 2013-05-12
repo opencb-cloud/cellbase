@@ -187,10 +187,10 @@ public class VariationParser {
 	public void createVariationDatabase(Path variationFilePath) {
 		try {
 
+			Class.forName("org.sqlite.JDBC");
+//			sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 			if(!Files.exists(variationFilePath.resolve("variation_tables.db"))) {
-				Class.forName("org.sqlite.JDBC");
-				sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-		//		sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 				
 				sqlConn.setAutoCommit(false);
 
