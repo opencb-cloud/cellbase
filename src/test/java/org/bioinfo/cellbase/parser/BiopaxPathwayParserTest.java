@@ -1,6 +1,7 @@
 package org.bioinfo.cellbase.parser;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bioinfo.formats.exception.FileFormatException;
@@ -23,6 +24,17 @@ public class BiopaxPathwayParserTest {
 	public void tearDown() throws Exception {
 	}
 
+	@Test
+	public void toDelete() {
+		String t = "11555128	1	rs36209322		\\N	0	12	0	\\N	\\N	0	\\N";
+		String[] arr = t.split("\t");
+		System.out.println(arr[0]);
+		System.out.println(arr[1]);
+		System.out.println(arr[2]);
+		System.out.println(arr[3]);
+		System.out.println(arr[4]);
+	}
+	
 	@Test
 	public void testParseToJson() {
 		BiopaxPathwayParser pathwayParser = new BiopaxPathwayParser();
