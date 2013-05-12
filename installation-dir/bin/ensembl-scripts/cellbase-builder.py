@@ -8,7 +8,7 @@ import re
 import json
 
 ## CLI arguments parser
-parser = argparse.ArgumentParser(prog="genome-seq.py")
+parser = argparse.ArgumentParser(prog="cellbase-builder.py")
 parser.add_argument("-s", "--species", help="Comma separated list of scientific names, i.e. 'Homo sapiens,Mus musculus'. Argument 'all' downloads of configured species. [Homo sapiens]")
 parser.add_argument("-v", "--ensembl-version", help="Ensembl version number, i.e. '71'. [71]")
 parser.add_argument("-i", "--indir", help="Output directory for downloaded data, a folder with the species name will be created, i.e. '/tmp'. [/tmp]")

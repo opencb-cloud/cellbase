@@ -129,7 +129,7 @@ public class CellBaseMain {
 				String indir = commandLine.getOptionValue("indir");
 				int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
 				System.out.println("chunksize: "+chunksize);
-				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_seq.json");
+				String outfile = commandLine.getOptionValue("outfile", "/tmp/regulations.json");
 				if(indir != null) {
 					try {
 						RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));

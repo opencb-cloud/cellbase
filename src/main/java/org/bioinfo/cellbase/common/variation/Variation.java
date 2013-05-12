@@ -6,7 +6,7 @@ import java.util.List;
 public class Variation {
 
 	// private String _id;
-	private String name; 			//0
+	private String id; 			//0
 	private String chromosome; 		//1
 	private int start; 				//2
 	private int end; 				//3
