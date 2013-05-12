@@ -6,7 +6,7 @@ import java.util.List;
 public class Variation {
 
 	// private String _id;
-	private String name; 			//0
+	private String id; 			//0
 	private String chromosome; 		//1
 	private int start; 				//2
 	private int end; 				//3
@@ -43,12 +43,12 @@ public class Variation {
 	public Variation() {
 	}
 
-	public Variation(String name, String chromosome, String type, int start, int end, String strand, String reference,
+	public Variation(String id, String chromosome, String type, int start, int end, String strand, String reference,
 			String alternate, String alleleString, String species, String assembly, String source, String version,
 			List<SampleGenotype> samples, List<TranscriptVariation> transcriptVariations,
 			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String featureAlias,
 			String variantFreq, String validationStatus) {
-		this.name = name;
+		this.id = id;
 		this.chromosome = chromosome;
 		this.type = type;
 		this.start = start;
@@ -121,11 +121,11 @@ public class Variation {
 	}
 
 	public String getName() {
-		return name;
+		return id;
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.id = name;
 	}
 
 	public String getChromosome() {

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
@@ -16,8 +17,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +36,11 @@ public class VariationParser {
 
 	private Connection sqlConn = null;
 
+//	private PreparedStatement psVariationFeature, psTranscriptVariation, psVariationSynonym;
 	private PreparedStatement psVariationFeature, psTranscriptVariation, psVariationSynonym;
-
+	
+	private RandomAccessFile raf,rafvariationFeature,rafTranscriptVariation,rafvariationSynonym;
+	
 	private int LIMITROWS = 100000;
 
 	public VariationParser() {
@@ -50,6 +56,7 @@ public class VariationParser {
 		String[] variationFeatureFields = null;
 		String[] transcriptVariationFields = null;
 		String[] variationSynonymFields = null;
+		StringBuffer sb = new StringBuffer();
 		
 		Variation variation = null;
 		List<TranscriptVariation> transcriptVariation = null;
@@ -58,7 +65,7 @@ public class VariationParser {
 		Map<String, String> seqRegionMap = loadHashSeqRegion(variationFilePath);
 		Map<String, String> sourceMap = loadHashSource(variationFilePath); 
 		
-		int count = 0;
+		int countprocess = 0;
 		int variationId = 0;
 		String line = null;
 		while((line = br.readLine()) != null) {
@@ -66,9 +73,8 @@ public class VariationParser {
 			variationId = Integer.parseInt(variationFields[0]);
 			
 //			queryMap = queryAllByVariationId(variationId, variationFilePath);
+//			long start = System.currentTimeMillis();
 			List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature", variationFilePath);
-			List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym", variationFilePath);
-//			System.out.println(count+" "+line);
 			
 //			System.out.println("\t"+queryMap.get("variation_feature"));
 //			System.out.println("\t"+queryMap.get("transcript_variation"));
@@ -76,8 +82,9 @@ public class VariationParser {
 //			System.out.println("\n");
 
 			
-			transcriptVariation = new ArrayList<>();
 			if(resultVariationFeature != null && resultVariationFeature.size() > 0) {
+				transcriptVariation = new ArrayList<>();
+				List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym", variationFilePath);
 				variationFeatureFields = resultVariationFeature.get(0).split("\t");
 
 				// TranscriptVariation references to VariationFeature no Variation !!!
@@ -86,7 +93,9 @@ public class VariationParser {
 					for(String rtv: resultTranscriptVariations) {
 						transcriptVariationFields = rtv.split("\t");
 						
-						TranscriptVariation tv = new TranscriptVariation(transcriptVariationFields[2], transcriptVariationFields[3] , transcriptVariationFields[4]
+						TranscriptVariation tv = new TranscriptVariation((transcriptVariationFields[2] != null && !transcriptVariationFields[2].equals("\\N")) ? transcriptVariationFields[2] : ""
+								, (transcriptVariationFields[3] != null && !transcriptVariationFields[3].equals("\\N")) ? transcriptVariationFields[3] : "" 
+								, (transcriptVariationFields[4] != null && !transcriptVariationFields[4].equals("\\N")) ? transcriptVariationFields[4] : ""
 								, Arrays.asList(transcriptVariationFields[5].split(","))
 								, (transcriptVariationFields[6] != null && !transcriptVariationFields[6].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[6]) : 0
 								, (transcriptVariationFields[7] != null && !transcriptVariationFields[7].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[7]) : 0
@@ -113,8 +122,10 @@ public class VariationParser {
 					String arr[];
 					for(String rxref: resultVariationSynonym) {					
 						variationSynonymFields = rxref.split("\t");
-						arr = sourceMap.get(variationSynonymFields[3]).split(",");
-						xrefs.add(new Xref(variationSynonymFields[4], arr[0], arr[1]));
+						if(sourceMap.get(variationSynonymFields[3]) != null) {
+							arr = sourceMap.get(variationSynonymFields[3]).split(",");
+							xrefs.add(new Xref(variationSynonymFields[4], arr[0], arr[1]));							
+						}
 					}
 					
 				}
@@ -125,11 +136,22 @@ public class VariationParser {
 				}else {
 					arr = new String[]{"", ""};
 				}
-				variation = new Variation(variationFields[2], seqRegionMap.get(variationFeatureFields[1]), "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], arr[0], arr[1], variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
+				
+				variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" , seqRegionMap.get(variationFeatureFields[1]), "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], (arr[0] != null && !arr[0].equals("\\N")) ? arr[0] : "" , (arr[1] != null && !arr[1].equals("\\N")) ? arr[1] : "" , variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
 
 //				System.out.println(gson.toJson(variation));
-				bw.write(gson.toJson(variation)+"\n");
+//				sb.append(gson.toJson(variation)).append("\n");
+				countprocess++;
+				if(countprocess % 10000 == 0 && countprocess != 0){
+					System.out.println("llevamos procesados: " + countprocess);
+				}
+				bw.write(gson.toJson(variation)+ "\n");
+//					sb = new StringBuffer();
+//				}
 			}
+//			System.out.println(count+" "+line);
+//			long end = System.currentTimeMillis();
+//			System.out.println("Tiempo: " + (end-start));
 			
 			
 		}
@@ -137,11 +159,16 @@ public class VariationParser {
 		bw.close();
 	}
 	
-	public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException {
-		Class.forName("org.sqlite.JDBC");
-		sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
-		sqlConn.setAutoCommit(false);
-
+	public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException, FileNotFoundException {
+//		Class.forName("org.sqlite.JDBC");
+		//sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+//		sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
+		//sqlConn.setAutoCommit(false);
+		
+		rafvariationFeature =new RandomAccessFile(variationFilePath.resolve("variation_feature.txt").toFile(), "r"); 
+		rafTranscriptVariation =new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt").toFile(), "r");
+		rafvariationSynonym =new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt").toFile(), "r");
+		
 		psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 		psTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
 		psVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
@@ -162,14 +189,18 @@ public class VariationParser {
 
 			if(!Files.exists(variationFilePath.resolve("variation_tables.db"))) {
 				Class.forName("org.sqlite.JDBC");
-				sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
+				sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+		//		sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
+				
 				sqlConn.setAutoCommit(false);
 
 				createTable(5, variationFilePath.resolve("variation_feature.txt"), "variation_feature");
 				createTable(1, variationFilePath.resolve("transcript_variation.txt"), "transcript_variation");
 				createTable(1, variationFilePath.resolve("variation_synonym.txt"), "variation_synonym");
+				
+//				psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 
-				sqlConn.close();		
+//				sqlConn.close();		
 			}
 
 		} catch (ClassNotFoundException e) {
@@ -189,30 +220,36 @@ public class VariationParser {
 		//		PreparedStatement pst = sqlConn.statement(sql)
 		//		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
 		ResultSet rs = null;
+//		long start = System.currentTimeMillis();
 		switch(tableName) {
 		case "variation_feature":
 			psVariationFeature.setInt(1, variationId);
 			rs = psVariationFeature.executeQuery();
+			raf = rafvariationFeature; 
 			break;
 		case "transcript_variation":
 			psTranscriptVariation.setInt(1, variationId);
 			rs = psTranscriptVariation.executeQuery();
+			raf = rafTranscriptVariation;
 			break;
 		case "variation_synonym":
 			psVariationSynonym.setInt(1, variationId);
 			rs = psVariationSynonym.executeQuery();
+			raf = rafvariationSynonym;
 			break;
 		}
+//		long end = System.currentTimeMillis();
+//		System.out.println("Tiempo: " + (end-start)/1000);
 		
 		while (rs.next()) {
 			offsets.add(rs.getLong(1));
 		}
-
+		Collections.sort(offsets);
 		// Second go to file
 		String line = null;
 		List<String> results = new ArrayList<>();
 		if(offsets.size() > 0) {
-			RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(tableName+".txt").toFile(), "r");
+//			RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(tableName+".txt").toFile(), "r");
 			for(Long offset: offsets){
 				if(offset >= 0) {
 					raf.seek(offset);
@@ -222,7 +259,6 @@ public class VariationParser {
 					}
 				}
 			}
-			raf.close();
 		}
 		return results;
 	}
