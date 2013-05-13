@@ -64,8 +64,8 @@ public class RegulatoryParser {
 		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "regulatory_features_multicell", GFFColumnNames, GFFColumnTypes, true);
 
 
-		GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
-		GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
+//		GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
+//		GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
 		filePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz");
 		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes, true);
 
@@ -431,6 +431,8 @@ public class RegulatoryParser {
 		genericFeature.setFrame(rs.getString(8));
 
 		genericFeature.setName(groupFields.get("name"));
+        String matrix = groupFields.get("name").split(":")[1];
+		genericFeature.setMatrix(matrix);
 
 		return genericFeature;
 	}
@@ -438,6 +440,7 @@ public class RegulatoryParser {
 	private static GenericFeature getMirnaFeature(ResultSet rs) throws SQLException {
 		//   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
 		GenericFeature genericFeature = new GenericFeature();
+        Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
 		genericFeature.setChromosome(rs.getString(1));
 		genericFeature.setSource(rs.getString(2));
@@ -447,6 +450,8 @@ public class RegulatoryParser {
 		genericFeature.setScore(rs.getString(6));
 		genericFeature.setStrand(rs.getString(7));
 		genericFeature.setFrame(rs.getString(8));
+
+        genericFeature.setName(groupFields.get("name"));
 
 		return genericFeature;
 	}
