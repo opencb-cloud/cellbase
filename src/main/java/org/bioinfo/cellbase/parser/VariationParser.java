@@ -18,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +49,9 @@ public class VariationParser {
 
 	public void parseVariationToJson(String species, String assembly, String source, String version, Path variationFilePath, Path outfileJson) throws IOException, SQLException {
 		BufferedReader br = Files.newBufferedReader(variationFilePath.resolve("variation.txt"), Charset.defaultCharset());
-		BufferedWriter bw = Files.newBufferedWriter(outfileJson, Charset.defaultCharset());
+//		BufferedWriter bw = Files.newBufferedWriter(outfileJson, Charset.defaultCharset());
+		// We need a different file for each chromosome
+		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
 		BufferedWriter bwLog = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+".log"), Charset.defaultCharset());
 		Gson gson = new Gson();
 		Map<String, List<String>> queryMap = null;
@@ -59,6 +60,7 @@ public class VariationParser {
 		String[] transcriptVariationFields = null;
 		String[] variationSynonymFields = null;
 		StringBuffer sb = new StringBuffer();
+		String chromosome;
 		
 		Variation variation = null;
 		List<TranscriptVariation> transcriptVariation = null;
@@ -138,18 +140,28 @@ public class VariationParser {
 				}else {
 					arr = new String[]{"", ""};
 				}
-				
+		
+				chromosome = seqRegionMap.get(variationFeatureFields[1]);
 				try {
-					variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" , seqRegionMap.get(variationFeatureFields[1]), "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], (arr[0] != null && !arr[0].equals("\\N")) ? arr[0] : "" , (arr[1] != null && !arr[1].equals("\\N")) ? arr[1] : "" , variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
+					variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" , chromosome, "SNV", (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0, (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0, variationFeatureFields[4], (arr[0] != null && !arr[0].equals("\\N")) ? arr[0] : "" , (arr[1] != null && !arr[1].equals("\\N")) ? arr[1] : "" , variationFeatureFields[6], species, assembly, source, version, null, transcriptVariation, null, xrefs, "featureId", "featureAlias", "variantFreq", variationFields[3]);
 
 					//				System.out.println(gson.toJson(variation));
 					//				sb.append(gson.toJson(variation)).append("\n");
 					countprocess++;
 					if(countprocess % 10000 == 0 && countprocess != 0){
-						System.out.println("llevamos procesados: " + countprocess);
+						System.out.println("Processed variations: " + countprocess);
 					}
-					bw.write(gson.toJson(variation)+ "\n");
-				}catch(ArrayIndexOutOfBoundsException e) {
+					
+					// Each variation is stored in a different file
+					// for MongoImport optimization, chrom files names end with '_chr1'
+					if(!chromFiles.containsKey(chromosome)) {
+						BufferedWriter bw = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+"_chr"+chromosome), Charset.defaultCharset());
+						chromFiles.put(chromosome, bw);
+					}
+					chromFiles.get(chromosome).write(gson.toJson(variation)+ "\n");
+					// old code
+//					bw.write(gson.toJson(variation)+ "\n");
+				}catch(Exception e) {
 					e.printStackTrace();
 					bwLog.write(line+"\n");
 				}
@@ -163,7 +175,10 @@ public class VariationParser {
 			
 		}
 		br.close();
-		bw.close();
+		// We need to close all chromosomes files
+		for(BufferedWriter bw: chromFiles.values()) {
+			bw.close();			
+		}
 		bwLog.close();
 	}
 	
@@ -195,10 +210,10 @@ public class VariationParser {
 	public void createVariationDatabase(Path variationFilePath) {
 		try {
 
+			Class.forName("org.sqlite.JDBC");
+			sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 			if(!Files.exists(variationFilePath.resolve("variation_tables.db"))) {
-				Class.forName("org.sqlite.JDBC");
-				sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-		//		sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 				
 				sqlConn.setAutoCommit(false);
 
@@ -365,9 +380,10 @@ public class VariationParser {
 	private Map<String, String> loadHashSeqRegion(Path variationFilePath) {
 		Map<String, String> seqRegion = new HashMap<String, String>();
 		try {
-			File seqRegionFile = variationFilePath.resolve("seq_region.txt.gz").toFile();
-			if (seqRegionFile.exists()) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
+			File seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
+			if(seqRegionFile.exists()) {
+//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
+				BufferedReader br = Files.newBufferedReader(seqRegionFile.toPath(), Charset.defaultCharset());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
@@ -385,10 +401,10 @@ public class VariationParser {
 	private Map<String, String> loadHashSource(Path variationFilePath) {
 		Map<String, String> sourceMap = new HashMap<String, String>();
 		try {
-			File sourceFile = variationFilePath.resolve("source.txt.gz").toFile();
-
-			if (sourceFile.exists()) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
+			File sourceFile = variationFilePath.resolve("source.txt").toFile();
+			if(sourceFile.exists()) {
+//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
+				BufferedReader br = Files.newBufferedReader(sourceFile.toPath(), Charset.defaultCharset());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
