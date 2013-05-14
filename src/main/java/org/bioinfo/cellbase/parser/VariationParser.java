@@ -366,6 +366,9 @@ public class VariationParser {
 		Map<String, String> seqRegion = new HashMap<String, String>();
 		try {
 			File seqRegionFile = variationFilePath.resolve("seq_region.txt.gz").toFile();
+			if(!seqRegionFile.exists()) {
+				seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
+			}
 			if (seqRegionFile.exists()) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
 				String readLine;
@@ -386,8 +389,10 @@ public class VariationParser {
 		Map<String, String> sourceMap = new HashMap<String, String>();
 		try {
 			File sourceFile = variationFilePath.resolve("source.txt.gz").toFile();
-
-			if (sourceFile.exists()) {
+			if(!sourceFile.exists()) {
+				sourceFile = variationFilePath.resolve("source.txt").toFile();
+			}
+			if(sourceFile.exists()) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
