@@ -3,10 +3,8 @@ package org.bioinfo.cellbase.parser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -24,11 +22,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
-import org.bioinfo.cellbase.common.variation.TranscriptVariation;
-import org.bioinfo.cellbase.common.variation.Variation;
-import org.bioinfo.cellbase.common.variation.Xref;
+import org.bioinfo.cellbase.lib.common.variation.TranscriptVariation;
+import org.bioinfo.cellbase.lib.common.variation.Variation;
+import org.bioinfo.cellbase.lib.common.variation.Xref;
 
 import com.google.gson.Gson;
 
