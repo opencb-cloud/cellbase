@@ -380,12 +380,10 @@ public class VariationParser {
 	private Map<String, String> loadHashSeqRegion(Path variationFilePath) {
 		Map<String, String> seqRegion = new HashMap<String, String>();
 		try {
-			File seqRegionFile = variationFilePath.resolve("seq_region.txt.gz").toFile();
-			if(!seqRegionFile.exists()) {
-				seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
-			}
-			if (seqRegionFile.exists()) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
+			File seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
+			if(seqRegionFile.exists()) {
+//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
+				BufferedReader br = Files.newBufferedReader(seqRegionFile.toPath(), Charset.defaultCharset());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
@@ -403,12 +401,10 @@ public class VariationParser {
 	private Map<String, String> loadHashSource(Path variationFilePath) {
 		Map<String, String> sourceMap = new HashMap<String, String>();
 		try {
-			File sourceFile = variationFilePath.resolve("source.txt.gz").toFile();
-			if(!sourceFile.exists()) {
-				sourceFile = variationFilePath.resolve("source.txt").toFile();
-			}
+			File sourceFile = variationFilePath.resolve("source.txt").toFile();
 			if(sourceFile.exists()) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
+//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
+				BufferedReader br = Files.newBufferedReader(sourceFile.toPath(), Charset.defaultCharset());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
