@@ -133,9 +133,10 @@
 									<arg value="-r" />
 									<arg value="${installation.dir}/example" />
 									<arg value="${installation.dir}/libs" />
-									<arg value="${installation.dir}/ensembl-scripts" />
+									<arg value="${installation.dir}/bin" />
+									<arg value="${installation.dir}/mongodb-scripts" />
 									<arg value="${installation.dir}/cellbase-build.sh" />
-									<arg value="${installation.dir}/cellbase.py" />
+									<arg value="${installation.dir}/cellbase-installer.py" />
 									<arg value="${dest.installation.dir}" />
 								</exec>
 							</target>
