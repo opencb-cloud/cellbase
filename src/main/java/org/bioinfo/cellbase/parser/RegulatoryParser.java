@@ -423,16 +423,16 @@ public class RegulatoryParser {
 
 		genericFeature.setChromosome(rs.getString(1));
 		genericFeature.setSource(rs.getString(2));
-		genericFeature.setFeatureType(rs.getString(3));
+		genericFeature.setFeatureType(rs.getString(3)+"_motif");
 		genericFeature.setStart(rs.getInt(4));
 		genericFeature.setEnd(rs.getInt(5));
 		genericFeature.setScore(rs.getString(6));
 		genericFeature.setStrand(rs.getString(7));
 		genericFeature.setFrame(rs.getString(8));
 
-		genericFeature.setName(groupFields.get("name"));
-        String matrix = groupFields.get("name").split(":")[1];
-		genericFeature.setMatrix(matrix);
+        String[] split = groupFields.get("name").split(":");
+		genericFeature.setName(split[0]);
+		genericFeature.setMatrix(split[1]);
 
 		return genericFeature;
 	}
