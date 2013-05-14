@@ -149,7 +149,7 @@ public class VariationParser {
 						System.out.println("llevamos procesados: " + countprocess);
 					}
 					bw.write(gson.toJson(variation)+ "\n");
-				}catch(ArrayIndexOutOfBoundsException e) {
+				}catch(Exception e) {
 					e.printStackTrace();
 					bwLog.write(line+"\n");
 				}
@@ -196,8 +196,8 @@ public class VariationParser {
 		try {
 
 			Class.forName("org.sqlite.JDBC");
-//			sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
+			sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 			if(!Files.exists(variationFilePath.resolve("variation_tables.db"))) {
 				
 				sqlConn.setAutoCommit(false);
