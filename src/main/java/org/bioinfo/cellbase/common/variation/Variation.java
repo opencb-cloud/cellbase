@@ -160,13 +160,13 @@ public class Variation {
 		this.strand = strand;
 	}
 
-	public List<TranscriptVariation> getConsequenceTypes() {
-		return transcriptVariations;
-	}
-
-	public void setConsequenceTypes(TranscriptVariation consequenceTypes) {
-		this.transcriptVariations.add(consequenceTypes);
-	}
+//	public List<TranscriptVariation> getConsequenceTypes() {
+//		return transcriptVariations;
+//	}
+//
+//	public void setConsequenceTypes(TranscriptVariation consequenceTypes) {
+//		this.transcriptVariations.add(consequenceTypes);
+//	}
 
 	public List<PopulationFrequency> getPopulationFrequencies() {
 		return populationFrequencies;
@@ -246,6 +246,14 @@ public class Variation {
 
 	public void setAlleleString(String alleleString) {
 		this.alleleString = alleleString;
+	}
+
+	public List<TranscriptVariation> getTranscriptVariations() {
+		return transcriptVariations;
+	}
+
+	public void setTranscriptVariations(List<TranscriptVariation> transcriptVariations) {
+		this.transcriptVariations = transcriptVariations;
 	}
 
 }
