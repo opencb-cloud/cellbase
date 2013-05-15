@@ -1,24 +1,9 @@
 package org.bioinfo.cellbase.parser;
 
 import com.google.gson.Gson;
-import com.mongodb.BasicDBList;
-import org.bioinfo.cellbase.lib.common.GenericFeature;
-import org.bioinfo.cellbase.lib.common.GenericFeatureChunk;
-import org.bioinfo.cellbase.lib.common.core.ConservedRegionChunk;
 import org.junit.Test;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 public class GenomeSequenceFastaParserTest {
     static int CHUNKSIZE = 2000;
